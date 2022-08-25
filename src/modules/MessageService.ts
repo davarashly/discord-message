@@ -36,9 +36,8 @@ export class MessageService {
 
           channel
             .send({ files, content })
-            .then((msg) => {
+            .then(() => {
               console.group(client.user.tag)
-              console.log(msg)
               console.log("Message was sent!")
               console.log(message)
               console.groupEnd()
