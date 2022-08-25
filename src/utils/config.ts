@@ -1,4 +1,3 @@
-import "module-alias/register"
 import { registerAliases } from "./registerAliases"
 import { readFileSync, writeFileSync } from "fs"
 import { pathResolve } from "./"
