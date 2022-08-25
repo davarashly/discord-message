@@ -1,4 +1,4 @@
-name: Discord Messager Integration
+name: Discord Messages Integration
 
 on:
   pull_request:
