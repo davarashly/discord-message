@@ -1,4 +1,3 @@
-import { registerAliases } from "./registerAliases"
 import { readFileSync, writeFileSync } from "fs"
 import { pathResolve } from "./"
 
@@ -15,8 +14,6 @@ export function capitalize(this: string) {
 }
 
 export default () => {
-  registerAliases()
-
   String.prototype.capitalize = capitalize
 
   const path = pathResolve(process.cwd(), "node_modules", "discord.js-user-account", "src", "structures", "interfaces", "Application.js")
