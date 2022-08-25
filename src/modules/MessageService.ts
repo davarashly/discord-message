@@ -1,6 +1,6 @@
 import * as fs from "fs/promises"
-import { hrsToMilliseconds, pathResolve } from "@/utils"
-import { Message } from "@/interfaces/Message"
+import { hrsToMilliseconds, pathResolve } from "../utils"
+import { Message } from "../interfaces/Message"
 import { Client, Intents, TextChannel } from "discord.js-user-account"
 
 export class MessageService {

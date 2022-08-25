@@ -1,7 +1,7 @@
 import "module-alias/register"
 import { registerAliases } from "./registerAliases"
 import { readFileSync, writeFileSync } from "fs"
-import { pathResolve } from "@/utils/index"
+import { pathResolve } from "./"
 
 declare global {
   interface String {
