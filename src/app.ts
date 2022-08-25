@@ -7,3 +7,6 @@ import { MessageService } from "./modules/MessageService"
 const messageService = new MessageService()
 
 messageService.processMessages()
+
+
+console.log(1)
