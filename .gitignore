@@ -15,7 +15,7 @@ yarn-error.log*
 ftp
 .env
 config/.env
-*credentials*
+messages.json
 
 # Runtime data
 pids
