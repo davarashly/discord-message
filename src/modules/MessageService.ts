@@ -46,10 +46,10 @@ export class MessageService {
 
         client.login(message.token)
       }
+
+      setTimeout(handler.bind(this), hrsToMilliseconds(0.51))
     }
 
     await handler.call(this)
-
-    setTimeout(handler.bind(this), hrsToMilliseconds(0.51))
   }
 }
