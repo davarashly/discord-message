@@ -2,6 +2,7 @@ import * as fs from "fs/promises"
 import { hrsToMilliseconds, pathResolve } from "../utils"
 import { Message } from "../interfaces/Message"
 import { Client, Intents, TextChannel } from "discord.js-user-account"
+import logger from "./Logger"
 
 export class MessageService {
   messages: Message[]
@@ -35,19 +36,19 @@ export class MessageService {
           channel
             .send({ files, content })
             .then(() => {
-              console.group(client.user.tag)
-              console.log("Message was sent!")
-              console.log(message)
-              console.groupEnd()
+              logger.log(client.user.tag)
+              logger.log("Message was sent!")
+              logger.log(message)
+              console.log()
             })
-            .catch((e) => console.error(e))
+            .catch((e) => logger.error(e))
         })
 
         client.login(message.token)
       }
     }
 
-    await handler.bind(this)()
+    await handler.call(this)
 
     setTimeout(handler.bind(this), hrsToMilliseconds(0.51))
   }
