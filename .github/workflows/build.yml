@@ -19,6 +19,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test --if-present
+    - name: Install packages
+      run: npm ci
+    - name: Build the Application
+      run: npm run build --if-present
+    - name: Test the Application
+      run: npm test --if-present
+    - name: Restart the Application on EC2
+      run: pm2 restart ecosystem.config.js
