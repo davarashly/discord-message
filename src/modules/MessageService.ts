@@ -20,37 +20,33 @@ export class MessageService {
   async processMessages() {
     await this.getMessages()
 
-    const handler = () => {
-      for (const message of this.messages) {
-        const client = new Client({ intents: [Intents.FLAGS.DIRECT_MESSAGES], loginAsUserAccount: true })
+    for (const message of this.messages) {
+      const client = new Client({ intents: [Intents.FLAGS.DIRECT_MESSAGES], loginAsUserAccount: true })
 
-        client.on("ready", (client) => {
-          console.log(`Logged in as ${client.user.tag}`)
+      client.on("ready", (client) => {
+        console.log(`Logged in as ${client.user.tag}`)
 
-          const {
-            channelId,
-            data: { content, files }
-          } = message
+        const {
+          channelId,
+          data: { content, files }
+        } = message
 
-          const channel = client.channels.cache.get(channelId) as TextChannel
+        const channel = client.channels.cache.get(channelId) as TextChannel
 
-          channel
-            .send({ files, content })
-            .then(() => {
-              console.group(client.user.tag)
-              console.log("Message was sent!")
-              console.log(message)
-              console.groupEnd()
-            })
-            .catch((e) => console.error(e))
-        })
+        channel
+          .send({ files, content })
+          .then(() => {
+            console.group(client.user.tag)
+            console.log("Message was sent!")
+            console.log(message)
+            console.groupEnd()
+          })
+          .catch((e) => console.error(e))
+      })
 
-        client.login(message.token)
-      }
-
-      setTimeout(handler, hrsToMilliseconds(0.51))
+      client.login(message.token)
     }
 
-    handler()
+    setTimeout(this.processMessages, hrsToMilliseconds(0.51))
   }
 }
