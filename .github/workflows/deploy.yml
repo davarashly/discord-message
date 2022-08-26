@@ -17,15 +17,14 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_KEY }}
           TARGET: ${{ secrets.EC2_APP_DIR }}
           EXCLUDE: "/build/, /node_modules/"
-      - name: Post Deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_DNS }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          port: 22
-          script: |
-            cd ${{ secrets.EC2_APP_DIR }};
-            yarn;
-            yarn build;
-            pm2 restart ecosystem.config.js;
+  post-deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Open App dir
+        run: cd ${{ secrets.EC2_APP_DIR }}
+      - name: Install packages
+        run: yarn
+      - name: Build the Application
+        run: yarn build
+      - name: Restart the Application
+        run: pm2 restart ecosystem.config.js
