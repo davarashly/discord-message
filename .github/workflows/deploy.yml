@@ -19,6 +19,7 @@ jobs:
           EXCLUDE: "/build/, /node_modules/"
   post-deploy:
     runs-on: self-hosted
+    needs: deploy
     steps:
       - name: Install packages
         run: cd ${{ secrets.EC2_APP_DIR }} && yarn
