@@ -1,6 +1,7 @@
 import { RequestListener, createServer } from "http"
 import { pathResolve, transpileHtml } from "../utils"
 import fs from "fs/promises"
+import SocketMgr from "./socket"
 
 const requestListener: RequestListener = async (req, res) => {
   if (req.url !== "/") {
@@ -35,4 +36,5 @@ const requestListener: RequestListener = async (req, res) => {
 
 const server = createServer(requestListener)
 
+export const socketMgr = new SocketMgr(server)
 export default server
