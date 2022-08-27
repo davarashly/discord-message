@@ -22,8 +22,8 @@ const requestListener: RequestListener = async (req, res) => {
   const logPath = pathResolve(process.cwd(), "logs", "info.log")
   const errorPath = pathResolve(process.cwd(), "logs", "error.log")
 
-  const info = (await fs.readFile(logPath)).toString()
-  const error = (await fs.readFile(errorPath)).toString()
+  const info = (await fs.readFile(logPath).catch(() => "")).toString()
+  const error = (await fs.readFile(errorPath).catch(() => "")).toString()
 
   let html = (await fs.readFile(pathResolve(process.cwd(), "src", "public", "index.html"))).toString()
 
