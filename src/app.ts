@@ -1,7 +1,5 @@
 /*** Config ***/
 
-import logger from "./modules/Logger"
-
 require("./utils/config").default()
 
 /*** Main ***/
