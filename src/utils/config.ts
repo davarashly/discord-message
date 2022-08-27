@@ -1,7 +1,10 @@
 import { readFileSync, writeFileSync } from "fs"
 import { pathResolve } from "./"
+import { config as dotEnvConfig } from "dotenv"
 
 export default () => {
+  dotEnvConfig()
+
   const path = pathResolve(process.cwd(), "node_modules", "discord.js-user-account", "src", "structures", "interfaces", "Application.js")
   const file = readFileSync(path).toString()
 

@@ -15,11 +15,13 @@
     "@": "./build"
   },
   "devDependencies": {
+    "@types/mkdirp": "^1.0.2",
     "@types/node": "^18.7.13",
     "cross-env": "^7.0.3",
     "dotenv": "^16.0.1",
     "module-alias": "^2.2.2",
     "nodemon": "^2.0.19",
+    "pnpm": "^7.9.5",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.0",
     "types-tsconfig": "^1.2.1",
@@ -27,6 +29,7 @@
   },
   "dependencies": {
     "discord.js": "^14.3.0",
-    "discord.js-user-account": "^13.3.0"
+    "discord.js-user-account": "^13.3.0",
+    "mkdirp": "^1.0.4"
   }
 }
