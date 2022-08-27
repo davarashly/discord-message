@@ -36,9 +36,7 @@ export class MessageService {
           channel
             .send({ files, content })
             .then(() => {
-              logger.log(client.user.tag)
-              logger.log("Message was sent!")
-              logger.log(message)
+              logger.log(`Message was sent as a user \`${client.user.tag}\` to the channel \`${channel.name}\`: ${message}`)
               console.log()
             })
             .catch((e) => logger.error(e))
