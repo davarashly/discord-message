@@ -4,8 +4,19 @@ import fs from "fs/promises"
 
 const requestListener: RequestListener = async (req, res) => {
   if (req.url !== "/") {
-    res.writeHead(404)
-    return res.end("404")
+    try {
+      const filePath = pathResolve(process.cwd(), "src", "public", req.url?.slice(1) || "")
+
+      await fs.stat(filePath)
+
+      const file = await fs.readFile(filePath)
+
+      res.writeHead(200)
+      return res.end(file)
+    } catch (e) {
+      res.writeHead(404)
+      return res.end("404")
+    }
   }
 
   const logPath = pathResolve(process.cwd(), "logs", "info.log")
