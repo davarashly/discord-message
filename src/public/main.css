@@ -10,3 +10,9 @@ pre b {
 pre.error b {
   color: #be2b4b;
 }
+
+header {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.95);
+}
