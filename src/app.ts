@@ -24,9 +24,6 @@ const requestListener: RequestListener = async (req, res) => {
     return res.end("404")
   }
 
-  logger.log("log")
-  logger.error("error")
-
   const logPath = pathResolve(process.cwd(), "logs", "info.log")
   const errorPath = pathResolve(process.cwd(), "logs", "error.log")
 
