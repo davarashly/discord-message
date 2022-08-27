@@ -30,6 +30,7 @@
   "dependencies": {
     "discord.js": "^14.3.0",
     "discord.js-user-account": "^13.3.0",
-    "mkdirp": "^1.0.4"
+    "mkdirp": "^1.0.4",
+    "socket.io": "^4.5.1"
   }
 }

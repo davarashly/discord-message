@@ -1,10 +1,28 @@
+const aTags = document.querySelectorAll("a")
+const preTag = document.querySelector("pre")
+
+const socket = io()
+
+socket.on("disconnect", () => {
+  socket.connect()
+})
+
+socket.on("info", (msg) => {
+  logs.info += msg
+
+  preTag.innerHTML = processLog(logs.info)
+})
+
+socket.on("error", (msg) => {
+  logs.error += msg
+
+  preTag.innerHTML = processLog(logs.error)
+})
+
 const processLog = (log) => {
   return log.replaceAll(/\[.+]:\s/gm, (m) => `<b>${m}</b>`)
 }
 
-const aTags = document.querySelectorAll("a")
-
-const preTag = document.querySelector("pre")
 preTag.innerHTML = processLog(logs.info)
 
 for (const aTag of aTags) {
