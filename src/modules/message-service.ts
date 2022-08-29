@@ -1,8 +1,8 @@
 import * as fs from "fs/promises"
-import { hrsToMilliseconds, pathResolve } from "../utils"
+import { hrsToMilliseconds, jsonCleanComments, pathResolve } from "../utils"
 import { Message } from "../interfaces/Message"
 import { Client, Intents, TextChannel } from "discord.js-user-account"
-import logger from "./Logger"
+import logger from "./logger"
 
 export class MessageService {
   messages: Message[]
@@ -13,7 +13,7 @@ export class MessageService {
 
   async getMessages() {
     const messagesFile = await fs.readFile(pathResolve(process.cwd(), "config", "messages.json"))
-    const messages: Message[] = JSON.parse(messagesFile.toString())
+    const messages: Message[] = jsonCleanComments(messagesFile.toString())
 
     this.messages = messages
   }

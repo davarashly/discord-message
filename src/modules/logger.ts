@@ -1,15 +1,14 @@
 import { pathResolve } from "../utils"
-import fs from "fs/promises"
 import mkdirp from "mkdirp"
-
 import { socketMgr } from "./server"
+import fs from "fs/promises"
 
 function log(...args: any[]) {
   const msg = prepareLog(args)
   const logPath = pathResolve(process.cwd(), "logs", "info.log")
 
+  console.log(msg)
   write(logPath, msg).then(() => {
-    console.log(msg)
     socketMgr.broadcast("info", msg)
   })
 }
@@ -18,8 +17,8 @@ function error(...args: any[]) {
   const msg = prepareLog(args)
   const logPath = pathResolve(process.cwd(), "logs", "error.log")
 
+  console.error(msg)
   write(logPath, msg).then(() => {
-    console.error(msg)
     socketMgr.broadcast("error", msg)
   })
 }
