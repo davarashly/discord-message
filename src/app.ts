@@ -11,12 +11,6 @@ const port = parseInt(process.env.BACKEND_PORT || "") || 8080
 
 server.listen(port, "0.0.0.0", async () => {
   logger.log(`Server is running on http://${(server.address() as AddressInfo).address}:${port}`)
-  logger.log("a")
-  logger.log("b")
 
-  setInterval(() => {
-    logger.log("c")
-  }, 1000)
-
-  // await new MessageService().processMessages()
+  await new MessageService().processMessages()
 })
