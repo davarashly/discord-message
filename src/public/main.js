@@ -3,6 +3,8 @@ const preTag = document.querySelector("pre")
 
 const socket = io()
 
+let activePage = "info"
+
 const scrollToBottom = () => window.scrollTo(0, document.body.clientHeight)
 
 socket.on("disconnect", () => {
@@ -12,15 +14,19 @@ socket.on("disconnect", () => {
 socket.on("info", (msg) => {
   logs.info += msg
 
-  preTag.innerHTML = processLog(logs.info)
-  scrollToBottom()
+  if (activePage === "info") {
+    preTag.innerHTML = processLog(logs.info)
+    scrollToBottom()
+  }
 })
 
 socket.on("error", (msg) => {
   logs.error += msg
 
-  preTag.innerHTML = processLog(logs.error)
-  scrollToBottom()
+  if (activePage === "error") {
+    preTag.innerHTML = processLog(logs.error)
+    scrollToBottom()
+  }
 })
 
 const processLog = (log) => {
@@ -35,10 +41,10 @@ for (const aTag of aTags) {
     evt.preventDefault()
     evt.stopPropagation()
 
-    const currentPage = aTag.dataset.page
+    activePage = aTag.dataset.page
 
-    preTag.innerHTML = processLog(logs[currentPage])
-    preTag.className = currentPage
+    preTag.innerHTML = processLog(logs[activePage])
+    preTag.className = activePage
     scrollToBottom()
 
     for (const aTag1 of aTags) {
