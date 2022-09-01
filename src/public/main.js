@@ -48,7 +48,7 @@ for (const aTag of aTags) {
     scrollToBottom()
 
     for (const aTag1 of aTags) {
-      if (aTag1.dataset.page !== currentPage) {
+      if (aTag1.dataset.page !== activePage) {
         aTag1.classList.remove("active")
       }
     }

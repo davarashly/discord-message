@@ -16,3 +16,35 @@ header {
   top: 0;
   background: rgba(255, 255, 255, 0.95);
 }
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #161819;
+    color: #fff;
+  }
+
+  pre b {
+    color: #6760fb;
+  }
+
+  .nav,
+  .col-nav {
+    background-color: #252c2f;
+    border-color: #151515;
+  }
+
+  .nav-tabs .nav-link {
+    color: #495057;
+  }
+
+  .nav-tabs .nav-link.active,
+  .nav-tabs .nav-link:focus,
+  .nav-tabs .nav-link:hover {
+    border-color: #444;
+  }
+
+  .nav-tabs .nav-link.active {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #6760fb;
+  }
+}
