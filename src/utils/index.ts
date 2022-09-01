@@ -11,7 +11,7 @@ export const hrsToMilliseconds = (hrs: number) => hrs * 60 * 60 * 1000
 
 export const transpileHtml = (html: string, data: Record<string, string>) => {
   for (const key in data) {
-    html = html.replace("#{" + key + "}", data[key].replace('"', "'"))
+    html = html.replace("#{" + key + "}", data[key].replaceAll('"', "'").replaceAll("`", "\\`"))
   }
 
   return html
