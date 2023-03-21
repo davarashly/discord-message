@@ -1,4 +1,4 @@
-import { pathResolve } from "./"
+import { pathResolve } from "./index"
 
 require("dotenv").config({ path: pathResolve(process.cwd(), "config", ".env") })
 

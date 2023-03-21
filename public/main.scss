@@ -1,14 +1,16 @@
 pre {
   white-space: pre-wrap;
   word-wrap: break-word;
-}
 
-pre b {
-  color: #0b10ab;
-}
+  b {
+    color: #0b10ab;
+  }
 
-pre.error b {
-  color: #be2b4b;
+  &.error {
+    b {
+      color: #be2b4b;
+    }
+  }
 }
 
 header {

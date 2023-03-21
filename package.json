@@ -8,7 +8,7 @@
     "build": "ts-node --files config/deleteBuild.ts && tsc --project tsconfig.json",
     "prod": "pnpm build && pnpm start",
     "dev": "cross-env NODE_ENV=dev pnpm prod",
-    "dev:watch": "cross-env NODE_ENV=dev nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node --files src/app.ts'",
+    "dev:watch": "cross-env NODE_ENV=dev nodemon --watch 'src/core/**/*' -e ts,tsx --exec 'ts-node --files src/app.ts'",
     "lint": "prettier --write \"src/**/*.ts\""
   },
   "_moduleAliases": {
@@ -16,21 +16,27 @@
   },
   "devDependencies": {
     "@types/mkdirp": "^1.0.2",
-    "@types/node": "^18.7.13",
+    "@types/node": "^18.15.5",
+    "@vitejs/plugin-vue": "^4.1.0",
+    "@vitejs/plugin-vue-jsx": "^3.0.1",
+    "@vue/compiler-sfc": "^3.2.47",
     "cross-env": "^7.0.3",
-    "dotenv": "^16.0.1",
+    "dotenv": "^16.0.3",
     "module-alias": "^2.2.2",
-    "nodemon": "^2.0.19",
-    "pnpm": "^7.9.5",
+    "nodemon": "^2.0.21",
+    "pnpm": "^7.30.0",
     "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.1.0",
-    "types-tsconfig": "^1.2.1",
-    "typescript": "^4.8.2"
+    "tsconfig-paths": "^4.1.2",
+    "types-tsconfig": "^2.0.2",
+    "typescript": "^5.0.2",
+    "vite": "^4.2.1"
   },
   "dependencies": {
-    "discord.js": "^14.3.0",
+    "discord.js": "^14.8.0",
     "discord.js-user-account": "^13.3.0",
-    "mkdirp": "^1.0.4",
-    "socket.io": "^4.5.1"
+    "mkdirp": "^2.1.5",
+    "sass": "^1.59.3",
+    "socket.io": "^4.6.1",
+    "vue": "^3.2.36"
   }
 }
