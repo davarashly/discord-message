@@ -9,7 +9,7 @@
     "prod": "pnpm build && pnpm start",
     "dev": "cross-env NODE_ENV=dev pnpm prod",
     "dev:watch": "cross-env NODE_ENV=dev nodemon --watch 'src/core/**/*' -e ts,tsx --exec 'ts-node --files src/app.ts'",
-    "lint": "prettier --write \"src/**/*.ts\""
+    "lint": "prettier --write \"src/**/*\""
   },
   "_moduleAliases": {
     "@": "./build"
@@ -29,13 +29,13 @@
     "tsconfig-paths": "^4.1.2",
     "types-tsconfig": "^2.0.2",
     "typescript": "^5.0.2",
-    "vite": "^4.2.1"
+    "vite": "^4.2.1",
+    "sass": "^1.59.3"
   },
   "dependencies": {
     "discord.js": "^14.8.0",
     "discord.js-user-account": "^13.3.0",
     "mkdirp": "^2.1.5",
-    "sass": "^1.59.3",
     "socket.io": "^4.6.1",
     "vue": "^3.2.36"
   }
