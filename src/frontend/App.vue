@@ -1,17 +1,34 @@
 <template>
-  <div id="app">
-    <h1>Hello from Vue s3 with TypeScript and SASS!</h1>
-    <p>{{ sobaka }}</p>
-  </div>
+  <header>
+    <Navbar />
+  </header>
+  <main class="p-3">
+    <div class="container">
+      <router-view />
+    </div>
+  </main>
+  <footer class="p-3 bg-dark text-white text-center">Footer</footer>
 </template>
 
 <script lang="ts" setup>
-const sobaka = ''
+import "bootstrap"
+import Navbar from "./components/Navbar.vue"
+
 </script>
 
 <style lang="scss">
+@import "bootstrap";
+
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  color: #2c3e50;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
 }
 </style>

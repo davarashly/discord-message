@@ -99,6 +99,6 @@
     "skipLibCheck": true,                                 /* Skip type checking all .d.ts files. */
     "types": ["vite/client", "vue"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
-  "exclude": ["node_modules", "config"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "exclude": ["node_modules", "config", "src/frontend/**/*"]
 }

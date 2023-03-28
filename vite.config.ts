@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [vue(), vueJsx()],
   publicDir: "public",
   build: {
-    outDir: "build"
+    outDir: "../../build/frontend"
   },
   clearScreen: false
 })

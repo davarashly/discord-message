@@ -6,15 +6,17 @@
   "scripts": {
     "start": "node .",
     "build": "ts-node --files config/deleteBuild.ts && tsc --project tsconfig.json",
-    "prod": "pnpm build && pnpm start",
-    "dev": "cross-env NODE_ENV=dev pnpm prod",
-    "dev:watch": "cross-env NODE_ENV=dev nodemon --watch 'src/core/**/*' -e ts,tsx --exec 'ts-node --files src/app.ts'",
+    "prod": "yarn build && yarn start",
+    "dev": "cross-env NODE_ENV=dev yarn prod",
+    "dev:watch": "cross-env NODE_ENV=dev nodemon --watch 'src/core/**/*' --watch 'src/app.ts' -e ts,tsx --exec 'ts-node --files src/app.ts'",
     "lint": "prettier --write \"src/**/*\""
   },
   "_moduleAliases": {
     "@": "./build"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.1",
+    "@types/mime-types": "^2.1.1",
     "@types/mkdirp": "^1.0.2",
     "@types/node": "^18.15.5",
     "@vitejs/plugin-vue": "^4.1.0",
@@ -24,19 +26,25 @@
     "dotenv": "^16.0.3",
     "module-alias": "^2.2.2",
     "nodemon": "^2.0.21",
-    "pnpm": "^7.30.0",
+    "sass": "^1.59.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.2",
     "types-tsconfig": "^2.0.2",
     "typescript": "^5.0.2",
     "vite": "^4.2.1",
-    "sass": "^1.59.3"
+    "yarn": "^1.22.19"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.7",
+    "bcrypt": "^5.1.0",
+    "bootstrap": "^5.2.3",
     "discord.js": "^14.8.0",
     "discord.js-user-account": "^13.3.0",
+    "jsonwebtoken": "^9.0.0",
+    "mime-types": "^2.1.35",
     "mkdirp": "^2.1.5",
     "socket.io": "^4.6.1",
-    "vue": "^3.2.36"
+    "vue": "^3.2.36",
+    "vue-router": "^4.0.13"
   }
 }
