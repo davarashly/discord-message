@@ -13,16 +13,18 @@
 <script lang="ts" setup>
 import { ref } from "vue"
 import { useStore } from "../store"
+import { useRouter } from "vue-router"
 
 const token = ref<string>(useStore().$state?.userData?.token || "")
+const router = useRouter()
 
 const onSubmit = async () => {
   try {
-    const res = await fetch("/api/token", {
+    await fetch("/api/token", {
       method: "post",
       body: JSON.stringify({ token: token.value })
     }).then((r) => r.json())
-    console.log(res)
+    await router.push("/")
   } catch (e) {
     console.error(e)
   }

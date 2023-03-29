@@ -1,5 +1,13 @@
 import { RequestListener } from "http"
-import { authController, getPostController, getPostsController, tokenUpdateController, updatePostController } from "./controller"
+import {
+  authController,
+  createPostController,
+  deletePostController,
+  getPostController,
+  getPostsController,
+  tokenUpdateController,
+  updatePostController
+} from "./controller"
 
 const apiRequestHandler: RequestListener = async (req, res) => {
   const url = req.url?.slice(1).split("/")
@@ -14,8 +22,13 @@ const apiRequestHandler: RequestListener = async (req, res) => {
         return tokenUpdateController(req, res)
       }
     case "/posts":
-      if (req.method === "POST" && /^\d+$/g.test(url?.[2] || "")) {
+      if (req.method === "PUT" && /^\d+$/g.test(url?.[2] || "")) {
         return updatePostController(req, res)
+      }
+      if (req.method === "DELETE" && /^\d+$/g.test(url?.[2] || "")) {
+        return deletePostController(req, res)
+      } else if (req.method === "POST") {
+        return createPostController(req, res)
       } else if (req.method === "GET") {
         if (/^\d+$/g.test(url?.[2] || "")) return getPostController(req, res)
         else return getPostsController(req, res)

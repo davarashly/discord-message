@@ -42,4 +42,10 @@ pre {
   white-space: break-spaces;
   margin-bottom: 0;
 }
+
+input,
+textarea {
+  background: rgba(0, 0, 0, 0.3) !important;
+  color: #fff !important;
+}
 </style>

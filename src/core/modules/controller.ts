@@ -129,7 +129,7 @@ export const getPostController: RequestListener = async (req, res) => {
 
     const dbService = new DBService()
 
-    const idx = req.url!.split("/").at(-1) || -1
+    const idx = req.url!.split("/").at(-1) || 0
 
     const post = await dbService.getPost(nickname, +idx)
 
@@ -167,13 +167,75 @@ export const updatePostController: RequestListener = async (req, res) => {
 
     const dbService = new DBService()
 
-    const idx = req.url!.split("/").at(-1) || -1
+    const idx = req.url!.split("/").at(-1) || 0
 
     await dbService.updatePost(nickname, payload.post, +idx)
 
     res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
 
-    return res.end(JSON.stringify({ message: "Posts changed successfully" }))
+    return res.end(JSON.stringify({ message: "Post changed successfully" }))
+  } catch (error) {
+    console.error(error)
+    res.writeHead(400)
+    return res.end(JSON.stringify({ error: (<any>error).message!.toString() }))
+  }
+}
+export const deletePostController: RequestListener = async (req, res) => {
+  const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
+
+  if (!cookies.token || cookies.token.toString().length < 10) {
+    res.writeHead(400)
+    return res.end()
+  }
+
+  try {
+    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
+    const { nickname } = JSON.parse(cookies.userData ?? "{}")
+
+    if (jwtPayload.nickname !== nickname) {
+      throw new Error()
+    }
+
+    const dbService = new DBService()
+
+    const idx = req.url!.split("/").at(-1) || ""
+
+    await dbService.deletePost(nickname, +idx)
+
+    res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
+
+    return res.end(JSON.stringify({ message: "Post changed successfully" }))
+  } catch (error) {
+    console.error(error)
+    res.writeHead(400)
+    return res.end(JSON.stringify({ error: (<any>error).message!.toString() }))
+  }
+}
+export const createPostController: RequestListener = async (req, res) => {
+  const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
+
+  if (!cookies.token || cookies.token.toString().length < 10) {
+    res.writeHead(400)
+    return res.end()
+  }
+
+  try {
+    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
+    const { nickname } = JSON.parse(cookies.userData ?? "{}")
+
+    if (jwtPayload.nickname !== nickname) {
+      throw new Error()
+    }
+
+    const payload = await getPayload<{ post: IMessage }>(req)
+
+    const dbService = new DBService()
+
+    await dbService.createPost(nickname, payload.post)
+
+    res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
+
+    return res.end(JSON.stringify({ message: "Post created successfully" }))
   } catch (error) {
     console.error(error)
     res.writeHead(400)

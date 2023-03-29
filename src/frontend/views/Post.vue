@@ -2,16 +2,22 @@
   <div class="container">
     <div class="row">
       <div class="col">
-        <pre v-if="viewMode" v-html="renderedPost" />
-        <div v-else>
+        <template v-if="viewMode">
+          <pre v-html="renderedPost" />
+          <div class="row mx-auto" style="max-width: 500px">
+            <div class="col">
+              <img class="img-fluid mt-4" v-for="img in post.data.files" :src="img" />
+            </div>
+          </div>
+        </template>
+        <template v-else>
           <div class="form-floating">
             <textarea :disabled="isLoading1 || isLoading2" v-model="post.data.content" class="form-control text-white" placeholder="Сообщение поста" id="floatingTextarea" />
             <label for="floatingTextarea">Сообщение поста</label>
           </div>
-
-          <input type="text" class="form-control mt-3" placeholder="Изображение" />
-          <input type="text" class="form-control mt-3" placeholder="Изображение" />
-        </div>
+          <input type="text" class="form-control mt-3" placeholder="Изображение" v-model="post.data.files![0]" />
+          <input type="text" class="form-control mt-3" placeholder="Изображение" v-model="post.data.files![1]" />
+        </template>
       </div>
     </div>
     <div class="row mt-4">
@@ -44,7 +50,7 @@ const router = useRouter()
 
 const viewMode = ref<boolean>(false)
 
-const { idx } = route.params
+const idx = route.params.idx as string
 
 const discordEmojis = gemoji.reduce((acc, cur) => {
   if (cur.emoji) {
@@ -65,7 +71,7 @@ const post = ref<IMessage>({
   channelId: "",
   data: {
     content: "",
-    files: [""]
+    files: ["", ""]
   }
 })
 
@@ -85,11 +91,12 @@ const reset = () => {
 
 const renderedPost = computed<string>(() => md.render(post.value.data.content.trim()))
 
-const { fetch: savePost, isLoading: isLoading2 } = useFetch(`/api/posts/${+idx - 1}`, "post", { post: post.value })
+const { fetch: savePost, isLoading: isLoading2 } = useFetch(`/api/posts${/^\d+$/g.test(idx) ? "/" + (+idx - 1) : ""}`, /^\d+$/g.test(idx) ? "put" : "post", { post: post.value })
 
 const onSubmit = async () => {
   try {
     await savePost()
+    await router.push("/")
   } catch (e) {
     console.error(e)
   }
@@ -97,8 +104,10 @@ const onSubmit = async () => {
 
 onBeforeMount(async () => {
   try {
-    await fetch()
-    reset()
+    if (/^\d+$/g.test(idx)) {
+      await fetch()
+      reset()
+    }
   } catch (e) {
     if (e.message === "404") {
       await router.push("/")
@@ -111,12 +120,6 @@ onBeforeMount(async () => {
 pre {
   max-width: 500px;
   margin-inline: auto;
-}
-
-input,
-textarea {
-  background: rgba(0, 0, 0, 0.3) !important;
-  color: #fff !important;
 }
 
 textarea {

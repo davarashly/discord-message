@@ -100,4 +100,28 @@ export class DBService {
 
     await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
   }
+
+  async createPost(nickname: keyof DB, post: IMessage) {
+    await this.getDB()
+
+    if (!this.DB[nickname]) {
+      throw new Error()
+    }
+
+    this.DB[nickname].posts.push(post)
+
+    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
+  }
+
+  async deletePost(nickname: keyof DB, idx: number) {
+    await this.getDB()
+
+    if (!this.DB[nickname]) {
+      throw new Error()
+    }
+
+    this.DB[nickname].posts.splice(idx, 1)
+
+    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
+  }
 }
