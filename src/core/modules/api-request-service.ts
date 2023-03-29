@@ -1,10 +1,10 @@
 import { RequestListener } from "http"
-import { authController, getPostsController, tokenUpdateController, updatePostsController } from "./controller"
+import { authController, getPostController, getPostsController, tokenUpdateController, updatePostController } from "./controller"
 
 const apiRequestHandler: RequestListener = async (req, res) => {
-  const url = req.url?.slice(4)
+  const url = req.url?.slice(1).split("/")
 
-  switch (url) {
+  switch ("/" + url?.[1]) {
     case "/auth":
       if (req.method === "POST") {
         return authController(req, res)
@@ -14,14 +14,15 @@ const apiRequestHandler: RequestListener = async (req, res) => {
         return tokenUpdateController(req, res)
       }
     case "/posts":
-      if (req.method === "POST") {
-        return updatePostsController(req, res)
+      if (req.method === "POST" && /^\d+$/g.test(url?.[2] || "")) {
+        return updatePostController(req, res)
       } else if (req.method === "GET") {
-        return getPostsController(req, res)
+        if (/^\d+$/g.test(url?.[2] || "")) return getPostController(req, res)
+        else return getPostsController(req, res)
       }
     default: // break or return is missing for purpose
       res.writeHead(404)
-      return res.end(req.url?.toString() || "404")
+      return res.end(JSON.stringify(url) || req.url?.toString() || "404")
   }
 }
 

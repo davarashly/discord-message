@@ -13,11 +13,15 @@
 <script lang="ts" setup>
 import "bootstrap"
 import Navbar from "./components/Navbar.vue"
-
 </script>
 
 <style lang="scss">
 @import "bootstrap";
+
+body {
+  background: #444;
+  color: white;
+}
 
 #app {
   min-height: 100vh;
@@ -30,5 +34,12 @@ main {
   flex-direction: column;
   flex: 1;
   justify-content: center;
+}
+
+pre {
+  max-width: 100%;
+  overflow: unset;
+  white-space: break-spaces;
+  margin-bottom: 0;
 }
 </style>

@@ -66,7 +66,7 @@ export class DBService {
 
     this.DB[nickname].token = token
 
-    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB))
+    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
   }
 
   async getPosts(nickname: keyof DB): Promise<IMessage[]> {
@@ -79,15 +79,25 @@ export class DBService {
     return this.DB[nickname].posts
   }
 
-  async updatePosts(nickname: keyof DB, posts: IMessage[]) {
+  async getPost(nickname: keyof DB, idx: number): Promise<IMessage> {
     await this.getDB()
 
     if (!this.DB[nickname]) {
       throw new Error()
     }
 
-    this.DB[nickname].posts = posts
+    return this.DB[nickname].posts[idx]
+  }
 
-    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB))
+  async updatePost(nickname: keyof DB, post: IMessage, idx: number) {
+    await this.getDB()
+
+    if (!this.DB[nickname]) {
+      throw new Error()
+    }
+
+    this.DB[nickname].posts[idx] = post
+
+    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
   }
 }

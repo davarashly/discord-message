@@ -32,18 +32,19 @@ export const getPayload = <T = Record<string, any>>(req: IncomingMessage) =>
   })
 
 export const parseCookies = <T = Record<string, string>>(cookieHeader: string) => {
-  const cookies = {} as T
+  const cookies = {} as Partial<T>
 
   if (cookieHeader) {
     const rawCookies = cookieHeader.split(";")
-    rawCookies.forEach((rawCookie) => {
+
+    for (const rawCookie of rawCookies) {
       const [key, value] = rawCookie.trim().split("=")
-      ;(cookies as any)[key] = value
-    })
+      cookies[key as keyof T] = value as T[keyof T]
+    }
   }
 
   return cookies
 }
 
-export const makeCookie = (key: string, value: string) => `${key}=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${24 * 60 * 60 * 2}`
+export const makeCookie = (key: string, value: string, httpOnly = true) => `${key}=${value}; Path=/; ${httpOnly ? "HttpOnly; " : ""}SameSite=Strict; Max-Age=${24 * 60 * 60 * 2}`
 export const makeDeleteCookie = (key: string) => `${key}=abc123; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`

@@ -1,22 +1,26 @@
- {
+{
   "zodix420": {
     "posts": [
       {
         "channelId": "670500780536627210",
         "data": {
           "content": ":shopping_bags: Продам синий Хаги Ваги\n:money_with_wings: Предложения в лс",
-          "files": ["https://media.discordapp.net/attachments/670500780536627210/1066063980713476166/Screenshot_2022-09-25_01543612x.jpg?width=527&height=702"]
+          "files": [
+            "https://media.discordapp.net/attachments/670500780536627210/1066063980713476166/Screenshot_2022-09-25_01543612x.jpg?width=527&height=702"
+          ]
         }
       },
       {
         "channelId": "720689672682209364",
         "data": {
           "content": ":shopping_bags: Продам всё что на скрине, Куртка LV, худи Nike, жилетка Gucci\n:money_with_wings: Предложения в лс \n\n||куртка лв луи виттон уиттон жилетка гуччи жилет||",
-          "files": ["https://media.discordapp.net/attachments/720689672682209364/1063464090053398648/coll2x.png?width=792&height=702"]
+          "files": [
+            "https://media.discordapp.net/attachments/720689672682209364/1063464090053398648/coll2x.png?width=792&height=702"
+          ]
         }
       }
     ],
     "token": "MzE4NDI5MDU1NTg4MjM3MzEy.GYdVtY.1RFw6oTxdbHSJpSpXMgEIrpq4NdK5ow6o4F100",
-    "hash": ""
+    "hash": "$2b$12$1vn.sXnEN4P6kHXdR741zuFQyzxHmJR63wT2a.QpOb.KS.mG09jDC"
   }
 }

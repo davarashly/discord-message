@@ -12,8 +12,9 @@
 
 <script lang="ts" setup>
 import { ref } from "vue"
+import { useStore } from "../store"
 
-const token = ref<string>("")
+const token = ref<string>(useStore().$state?.userData?.token || "")
 
 const onSubmit = async () => {
   try {
