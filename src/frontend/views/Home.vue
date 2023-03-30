@@ -49,7 +49,7 @@ const discordEmojis = gemoji.reduce((acc, cur) => {
 const md = new MarkdownIt().use(MarkdownItEmoji, { defs: discordEmojis })
 
 const posts = ref<IMessage[]>([])
-const renderedPosts = computed<string[]>(() => posts.value.map((post) => md.render(post.data.content.trim())))
+const renderedPosts = computed<string[]>(() => posts.value.map((post) => md.render(post.data.content.trim().slice(0, 200)) + "..."))
 
 onMounted(async () => {
   try {
