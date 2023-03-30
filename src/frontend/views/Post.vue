@@ -11,6 +11,10 @@
           </div>
         </template>
         <template v-else>
+          <div class="form-check mb-3 d-flex align-items-center">
+            <input class="form-check-input me-2 my-0" type="checkbox" v-model="post.active" :checked="post.active" id="flexCheckDefault" />
+            <label class="form-check-label" for="flexCheckDefault"> Отправлять </label>
+          </div>
           <input type="text" class="form-control mb-3" placeholder="ID канала" v-model="post.channelId" />
           <div class="form-floating">
             <textarea :disabled="isLoading1 || isLoading2" v-model="post.data.content" class="form-control text-white" placeholder="Сообщение поста" id="floatingTextarea" />
@@ -39,12 +43,12 @@
 
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref, watch } from "vue"
-import { IMessage } from "../../core/interfaces/IMessage"
 import MarkdownIt from "markdown-it"
 import MarkdownItEmoji from "markdown-it-emoji"
 import { gemoji } from "gemoji"
 import { useRoute, useRouter } from "vue-router"
 import useFetch from "../compositions/useFetch"
+import { IMessage, Status } from "../../core/interfaces/IMessage"
 
 const route = useRoute()
 const router = useRouter()
@@ -69,17 +73,21 @@ const { data, isLoading: isLoading1, fetch } = useFetch<{ post: IMessage }>(`/ap
 const originalPost = computed<IMessage | undefined>(() => data.value?.post)
 
 const post = ref<IMessage>({
+  active: false,
   channelId: "",
   data: {
     content: "",
     files: ["", ""]
-  }
+  },
+  status: "n/a" as Status
 })
 
 watch(originalPost, () => {
   if (!!originalPost.value?.data) {
     post.value.data = { ...originalPost.value!.data }
     post.value.channelId = originalPost.value!.channelId
+    post.value.active = originalPost.value!.active
+    post.value.status = originalPost.value!.status
   }
 })
 
@@ -87,6 +95,8 @@ const reset = () => {
   if (!!originalPost.value?.data) {
     post.value.data = { ...originalPost.value!.data }
     post.value.channelId = originalPost.value!.channelId
+    post.value.active = originalPost.value!.active
+    post.value.status = originalPost.value!.status
   }
 }
 

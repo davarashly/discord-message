@@ -3,12 +3,7 @@
     <div class="row">
       <div class="col">
         <div class="posts">
-          <router-link
-            :to="`/posts/${idx + 1}`"
-            v-for="(post, idx) in renderedPosts"
-            :class="{ success: posts[idx].status === 'success', fail: posts[idx].status === 'fail' }"
-            class="post text-white text-decoration-none d-flex justify-content-center align-items-center position-relative"
-          >
+          <router-link :to="`/posts/${idx + 1}`" v-for="(post, idx) in renderedPosts" :class="{ disabled: !posts[idx].active, success: posts[idx].status === 'success', fail: posts[idx].status === 'fail' }" class="post text-white text-decoration-none">
             <div class="p-2 delete" style="position: absolute; top: 0.5rem; right: 0.5rem" @click.prevent="deletePost(idx)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
                 <path
@@ -17,7 +12,7 @@
               </svg>
             </div>
             <pre v-html="renderedPosts[idx]" />
-            <div class="row">
+            <div class="row" v-if="posts[idx].data.files?.some((f) => !!f)">
               <div class="col">
                 <img class="img-fluid mt-4" v-for="img in posts[idx].data.files" :src="img" />
               </div>
@@ -98,6 +93,24 @@ const deletePost = async (idx: number) => {
     flex-direction: column;
     margin-bottom: 2rem;
     transition: 0.2s;
+    position: relative;
+
+    &.disabled {
+      overflow: hidden;
+
+      &::after {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        pointer-events: none;
+        z-index: 9999;
+      }
+    }
 
     &.success {
       border-color: var(--bs-success);
@@ -139,6 +152,8 @@ const deletePost = async (idx: number) => {
       align-items: center;
       transition: 0.2s;
       opacity: 0;
+      position: relative;
+      z-index: 999999999999;
 
       &:hover {
         background: rgba(0, 0, 0, 0.2);
