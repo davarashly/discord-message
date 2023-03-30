@@ -11,6 +11,7 @@
           </div>
         </template>
         <template v-else>
+          <input type="text" class="form-control mb-3" placeholder="ID канала" v-model="post.channelId" />
           <div class="form-floating">
             <textarea :disabled="isLoading1 || isLoading2" v-model="post.data.content" class="form-control text-white" placeholder="Сообщение поста" id="floatingTextarea" />
             <label for="floatingTextarea">Сообщение поста</label>

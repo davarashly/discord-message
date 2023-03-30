@@ -1,10 +1,10 @@
-import { defineStore, GettersTree } from "pinia"
+import { defineStore, _GettersTree } from "pinia"
 
 export type RootState = {
   userData: { nickname?: string; token?: string } | undefined
 }
 
-export const useStore = defineStore<"userData", RootState, GettersTree<RootState>, { updateUserData: () => void }>({
+export const useStore = defineStore<"userData", RootState, _GettersTree<RootState>, { updateUserData: () => void }>({
   id: "userData",
   state: () => ({
     userData: document.cookie ? JSON.parse(document.cookie.replace("userData=", "")) : undefined
