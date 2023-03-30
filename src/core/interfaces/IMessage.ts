@@ -1,6 +1,7 @@
-type Status = "fail" | "success" | "n/a"
+export type Status = "fail" | "success" | "n/a"
 
 export interface IMessage {
+  active: boolean
   channelId: string
   data: {
     content: string

@@ -45,7 +45,7 @@ pre {
 
 input,
 textarea {
-  background: rgba(0, 0, 0, 0.3) !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
   color: #fff !important;
 }
 </style>
