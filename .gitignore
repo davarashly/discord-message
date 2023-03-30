@@ -13,7 +13,7 @@ yarn-error.log*
 ftp
 .env
 config/.env
-config/BD.json
+config/DB.json
 messages.json
 config/messages.json
 build
