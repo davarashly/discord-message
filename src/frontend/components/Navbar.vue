@@ -9,6 +9,9 @@
           <li v-for="link in links" class="nav-item text-center">
             <router-link class="nav-link" :class="{ active: isRouteActive(link.url) }" :exact="!!link.exact" :to="link.url">{{ link.text }} </router-link>
           </li>
+          <li v-if="!!store.userData?.token" class="nav-item text-center border-start ms-md-4 ps-md-4">
+            <a href="#" class="nav-link" @click.prevent="logOut">Выйти</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -17,7 +20,9 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter } from "vue-router"
+import useFetch from "../compositions/useFetch"
+import { useStore } from "../store"
 
 interface ILink {
   url: string
@@ -26,6 +31,8 @@ interface ILink {
 }
 
 const route = useRoute()
+const router = useRouter()
+const store = useStore()
 
 const links: ILink[] = [
   { url: "/posts", text: "Посты" },
@@ -33,4 +40,28 @@ const links: ILink[] = [
 ]
 
 const isRouteActive = (path: string) => computed(() => route.path.startsWith(path)).value
+
+const { fetch } = useFetch("/api/logout")
+
+const logOut = async () => {
+  try {
+    await fetch()
+
+    store.updateUserData()
+
+    setTimeout(async () => {
+      await router.push("/")
+    }, 0)
+  } catch (e) {
+    console.error(e)
+  }
+}
 </script>
+
+<style lang="scss" scoped>
+.border-start {
+  @media (max-width: 768px) {
+    border-width: 0 !important;
+  }
+}
+</style>

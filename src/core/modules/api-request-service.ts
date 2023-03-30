@@ -1,13 +1,6 @@
 import { RequestListener } from "http"
-import {
-  authController,
-  createPostController,
-  deletePostController,
-  getPostController,
-  getPostsController,
-  tokenUpdateController,
-  updatePostController
-} from "./controller"
+import { authController, createPostController, deletePostController, getPostController, getPostsController, tokenUpdateController, updatePostController } from "./controller"
+import { getContentType, getExtension, makeDeleteCookie } from "../utils"
 
 const apiRequestHandler: RequestListener = async (req, res) => {
   const url = req.url?.slice(1).split("/")
@@ -17,6 +10,12 @@ const apiRequestHandler: RequestListener = async (req, res) => {
       if (req.method === "POST") {
         return authController(req, res)
       }
+    case "/logout":
+      const deleteCookies = [makeDeleteCookie("userData"), makeDeleteCookie("token")]
+      res.setHeader("Set-Cookie", deleteCookies)
+      res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
+
+      return res.end('{}')
     case "/token":
       if (req.method === "POST") {
         return tokenUpdateController(req, res)
