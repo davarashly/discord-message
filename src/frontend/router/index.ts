@@ -8,7 +8,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/", redirect: "/posts" },
   { path: "/posts", component: Home },
   { path: "/posts/:idx", component: import("../views/Post.vue") },
-  { path: "/settings", component: Settings },
+  { path: "/settings", component: import("../views/Settings.vue") },
   { path: "/login", component: import("../views/Login.vue") }
 ]
 
