@@ -18,7 +18,7 @@ export class DBService {
   async getDB() {
     const dbFile = await fs.readFile(pathResolve(process.cwd(), "config", "DB.json"))
 
-    this._DB = jsonCleanComments(dbFile.toString()) as DB
+    this._DB = jsonCleanComments(dbFile.toString())
   }
 
   async processMessages() {
@@ -26,7 +26,7 @@ export class DBService {
       await this.getDB()
 
       for (const nickname in this.DB) {
-        for (let i = 0; i < this.DB[nickname].posts.length; i++) {
+        for (let i = 0; i < this.DB[nickname].posts?.length; i++) {
           const post = this.DB[nickname].posts[i]
 
           if (!post.active) {
@@ -44,26 +44,31 @@ export class DBService {
             const channel = client.channels.cache.get(channelId) as TextChannel
 
             channel
-              .send({ files, content })
+              .send({ files: files?.filter((f) => !!f), content })
               .then(async () => {
                 logger.log(`Message was sent as a user '${client.user.tag}' to the channel '${channel.name}': ${content}`)
 
-                if (post.status === "success") {
+                if (post.status !== "success") {
                   post.status = "success"
                   await this.updatePost(nickname, post, i)
                 }
                 console.log()
               })
               .catch(async (e) => {
+                console.error(e)
                 logger.error(e)
-                if (post.status === "fail") {
+                if (post.status !== "fail") {
                   post.status = "fail"
                   await this.updatePost(nickname, post, i)
                 }
               })
           })
 
-          client.login(this.DB[nickname].token)
+          try {
+            await client.login(this.DB[nickname].token)
+          } catch (e) {
+            logger.error(`\`${nickname}\` has invalid discord token.`)
+          }
         }
       }
 
