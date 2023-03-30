@@ -12,11 +12,12 @@
 
 <script lang="ts" setup>
 import { ref } from "vue"
-import { useStore } from "../store"
 import { useRouter } from "vue-router"
+import { useStore } from "../store"
 
 const token = ref<string>(useStore().$state?.userData?.token || "")
 const router = useRouter()
+const store = useStore()
 
 const onSubmit = async () => {
   try {
@@ -24,6 +25,9 @@ const onSubmit = async () => {
       method: "post",
       body: JSON.stringify({ token: token.value })
     }).then((r) => r.json())
+
+    store.updateUserData()
+
     await router.push("/")
   } catch (e) {
     console.error(e)
