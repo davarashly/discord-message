@@ -7,9 +7,9 @@ const routes: RouteRecordRaw[] = [
   // Add your routes here
   { path: "/", redirect: "/posts" },
   { path: "/posts", component: Home },
-  { path: "/posts/:idx", component: import("../views/Post.vue") },
-  { path: "/settings", component: import("../views/Settings.vue") },
-  { path: "/login", component: import("../views/Login.vue") }
+  { path: "/posts/:idx", component: () => import("../views/Post.vue") },
+  { path: "/settings", component: () => import("../views/Settings.vue") },
+  { path: "/login", component: () => import("../views/Login.vue") }
 ]
 
 const router: Router = createRouter({
