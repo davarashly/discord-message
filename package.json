@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node .",
     "build": "ts-node --files config/deleteBuild.ts && tsc --project tsconfig.json && vite build",
-    "prod": "yarn build && yarn start",
-    "dev": "cross-env NODE_ENV=dev yarn prod",
+    "prod": "npm run build && npm run start",
+    "dev": "cross-env NODE_ENV=dev npm run prod",
     "dev:watch": "cross-env NODE_ENV=dev nodemon --watch 'src/core/**/*' --watch 'src/app.ts' -e ts,tsx --exec 'ts-node --files src/app.ts'",
     "lint": "prettier --write \"src/**/*\""
   },
