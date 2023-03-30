@@ -11,8 +11,8 @@ jobs:
       - name: Pull code
         run: cd ${{ secrets.EC2_APP_DIR }} && git pull
       - name: Install packages
-        run: cd ${{ secrets.EC2_APP_DIR }} && yarn
+        run: cd ${{ secrets.EC2_APP_DIR }} && npm i
       - name: Build the Application
-        run: cd ${{ secrets.EC2_APP_DIR }} && yarn build
+        run: cd ${{ secrets.EC2_APP_DIR }} && npm run build
       - name: Restart the Application
         run: cd ${{ secrets.EC2_APP_DIR }} && pm2 restart ecosystem.config.js
