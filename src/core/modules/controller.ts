@@ -104,7 +104,7 @@ export const getPostsController: RequestListener = async (req, res) => {
 
     res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
 
-    return res.end(JSON.stringify({ posts }))
+    return res.end(JSON.stringify({ posts: posts ?? [] }))
   } catch (error) {
     console.error(error)
     res.writeHead(400)
@@ -228,6 +228,7 @@ export const createPostController: RequestListener = async (req, res) => {
     }
 
     const payload = await getPayload<{ post: IMessage }>(req)
+    payload.post.status = "n/a"
 
     const dbService = new DBService()
 

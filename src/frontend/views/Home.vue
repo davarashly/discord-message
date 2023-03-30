@@ -3,7 +3,12 @@
     <div class="row">
       <div class="col">
         <div class="posts">
-          <router-link :to="`/posts/${idx + 1}`" v-for="(post, idx) in renderedPosts" class="post text-white text-decoration-none d-block position-relative">
+          <router-link
+            :to="`/posts/${idx + 1}`"
+            v-for="(post, idx) in renderedPosts"
+            :class="{ success: posts[idx].status === 'success', fail: posts[idx].status === 'fail' }"
+            class="post text-white text-decoration-none d-flex justify-content-center align-items-center position-relative"
+          >
             <div class="p-2 delete" style="position: absolute; top: 0.5rem; right: 0.5rem" @click.prevent="deletePost(idx)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
                 <path
@@ -84,7 +89,7 @@ const deletePost = async (idx: number) => {
   .post {
     max-width: 300px;
     //max-height: 300px;
-    border: 1px solid gray;
+    border: 1px solid var(--bs-gray-600);
     border-radius: 10px;
     padding: 3rem 1rem;
     display: flex;
@@ -92,6 +97,15 @@ const deletePost = async (idx: number) => {
     align-items: center;
     flex-direction: column;
     margin-bottom: 2rem;
+    transition: 0.2s;
+
+    &.success {
+      border-color: var(--bs-success);
+    }
+
+    &.fail {
+      border-color: var(--bs-danger);
+    }
 
     pre {
       min-width: 265px;
@@ -105,8 +119,6 @@ const deletePost = async (idx: number) => {
     :deep(p:last-of-type) {
       margin-bottom: 0;
     }
-
-    transition: 0.2s;
 
     &:hover {
       transform: translateY(-10px);

@@ -27,24 +27,36 @@ export class DBService {
       await this.getDB()
 
       for (const nickname in this.DB) {
-        for (const message of this.DB[nickname].posts) {
+        for (let i = 0; i < this.DB[nickname].posts.length; i++) {
+          const post = this.DB[nickname].posts[i]
           const client = new Client({ intents: [Intents.FLAGS.DIRECT_MESSAGES], loginAsUserAccount: true })
 
           client.on("ready", (client) => {
             const {
               channelId,
               data: { content, files }
-            } = message
+            } = post
 
             const channel = client.channels.cache.get(channelId) as TextChannel
 
             channel
               .send({ files, content })
-              .then(() => {
+              .then(async () => {
                 logger.log(`Message was sent as a user '${client.user.tag}' to the channel '${channel.name}': ${content}`)
+
+                if (post.status === "success") {
+                  post.status = "success"
+                  await this.updatePost(nickname, post, i)
+                }
                 console.log()
               })
-              .catch((e) => logger.error(e))
+              .catch(async (e) => {
+                logger.error(e)
+                if (post.status === "fail") {
+                  post.status = "fail"
+                  await this.updatePost(nickname, post, i)
+                }
+              })
           })
 
           client.login(this.DB[nickname].token)
@@ -86,7 +98,7 @@ export class DBService {
       throw new Error()
     }
 
-    return this.DB[nickname].posts[idx]
+    return this.DB[nickname].posts?.[idx]
   }
 
   async updatePost(nickname: keyof DB, post: IMessage, idx: number) {
@@ -94,6 +106,14 @@ export class DBService {
 
     if (!this.DB[nickname]) {
       throw new Error()
+    }
+
+    if (!this.DB[nickname].posts) {
+      this.DB[nickname].posts = []
+    }
+
+    if (!this.DB[nickname].posts[idx]) {
+      idx = this.DB[nickname].posts.length
     }
 
     this.DB[nickname].posts[idx] = post
@@ -108,6 +128,10 @@ export class DBService {
       throw new Error()
     }
 
+    if (!this.DB[nickname].posts) {
+      this.DB[nickname].posts = []
+    }
+
     this.DB[nickname].posts.push(post)
 
     await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
@@ -118,6 +142,10 @@ export class DBService {
 
     if (!this.DB[nickname]) {
       throw new Error()
+    }
+
+    if (!this.DB[nickname].posts) {
+      this.DB[nickname].posts = []
     }
 
     this.DB[nickname].posts.splice(idx, 1)

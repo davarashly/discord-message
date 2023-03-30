@@ -124,7 +124,7 @@ pre {
 }
 
 textarea {
-  min-height: 58vh;
+  min-height: 40vh;
 
   @media (min-width: 768px) {
     min-height: 250px;
