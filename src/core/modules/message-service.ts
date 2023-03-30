@@ -17,9 +17,8 @@ export class DBService {
 
   async getDB() {
     const dbFile = await fs.readFile(pathResolve(process.cwd(), "config", "DB.json"))
-    const db: DB = jsonCleanComments(dbFile.toString())
 
-    this._DB = db
+    this._DB = jsonCleanComments(dbFile.toString()) as DB
   }
 
   async processMessages() {
@@ -29,6 +28,11 @@ export class DBService {
       for (const nickname in this.DB) {
         for (let i = 0; i < this.DB[nickname].posts.length; i++) {
           const post = this.DB[nickname].posts[i]
+
+          if (!post.active) {
+            continue
+          }
+
           const client = new Client({ intents: [Intents.FLAGS.DIRECT_MESSAGES], loginAsUserAccount: true })
 
           client.on("ready", (client) => {
