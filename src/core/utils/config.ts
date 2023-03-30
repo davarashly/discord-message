@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from "fs"
-import { pathResolve } from "./"
+import { pathResolve } from "./index"
 import { config as dotEnvConfig } from "dotenv"
 
 export default () => {

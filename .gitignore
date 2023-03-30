@@ -13,8 +13,10 @@ yarn-error.log*
 ftp
 .env
 config/.env
+config/DB.json
 messages.json
 config/messages.json
+build
 
 # Runtime data
 pids
