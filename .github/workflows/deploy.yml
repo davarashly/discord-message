@@ -10,8 +10,6 @@ jobs:
     steps:
       - name: Pull code
         run: cd ${{ secrets.EC2_APP_DIR }} && git pull
-      - name: Test
-        run: whoami && echo $PATH
       - name: Install packages
         run: cd ${{ secrets.EC2_APP_DIR }} && npm i
       - name: Build the Application
