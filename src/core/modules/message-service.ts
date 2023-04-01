@@ -35,12 +35,13 @@ export class DBService {
 
           const client = new Client({ intents: [Intents.FLAGS.DIRECT_MESSAGES], loginAsUserAccount: true })
 
-          client.on("ready", (client) => {
-            const {
-              channelId,
-              data: { content, files }
-            } = post
+          const {
+            channelId,
+            data: { content, files },
+            token
+          } = post
 
+          client.on("ready", (client) => {
             const channel = client.channels.cache.get(channelId) as TextChannel
 
             channel
@@ -65,7 +66,7 @@ export class DBService {
           })
 
           try {
-            await client.login(this.DB[nickname].token)
+            await client.login(token || this.DB[nickname].token)
           } catch (e) {
             logger.error(`\`${nickname}\` has invalid discord token.`)
           }

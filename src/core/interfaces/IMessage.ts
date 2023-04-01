@@ -8,6 +8,7 @@ export interface IMessage {
     files?: string[]
   }
   status: Status
+  token?: string
 }
 
 export interface DB {

@@ -16,6 +16,7 @@
             <label class="form-check-label" for="flexCheckDefault"> Отправлять </label>
           </div>
           <input type="text" class="form-control mb-3" placeholder="ID канала" v-model="post.channelId" />
+          <input type="text" class="form-control mb-4" :placeholder="store.userData?.token" v-model="post.token" />
           <div class="form-floating">
             <textarea :disabled="isLoading1 || isLoading2" v-model="post.data.content" class="form-control text-white" placeholder="Сообщение поста" id="floatingTextarea" />
             <label for="floatingTextarea">Сообщение поста</label>
@@ -49,9 +50,13 @@ import { gemoji } from "gemoji"
 import { useRoute, useRouter } from "vue-router"
 import useFetch from "../compositions/useFetch"
 import { IMessage, Status } from "../../core/interfaces/IMessage"
+import { useStore } from "../store"
 
 const route = useRoute()
 const router = useRouter()
+const store = useStore()
+
+
 
 const viewMode = ref<boolean>(false)
 
@@ -79,7 +84,8 @@ const post = ref<IMessage>({
     content: "",
     files: ["", ""]
   },
-  status: "n/a" as Status
+  status: "n/a" as Status,
+  token: ""
 })
 
 watch(originalPost, () => {
@@ -102,7 +108,10 @@ const reset = () => {
 
 const renderedPost = computed<string>(() => md.render(post.value.data.content.trim()))
 
-const { fetch: savePost, isLoading: isLoading2 } = useFetch(`/api/posts${/^\d+$/g.test(idx) ? "/" + (+idx - 1) : ""}`, /^\d+$/g.test(idx) ? "put" : "post", { post: post.value })
+const {
+  fetch: savePost,
+  isLoading: isLoading2
+} = useFetch(`/api/posts${/^\d+$/g.test(idx) ? "/" + (+idx - 1) : ""}`, /^\d+$/g.test(idx) ? "put" : "post", { post: post.value })
 
 const onSubmit = async () => {
   try {
