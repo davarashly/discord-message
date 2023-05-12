@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue"
+import { computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import useFetch from "../compositions/useFetch"
 import { useStore } from "../store"
@@ -51,7 +51,7 @@ const logOut = async () => {
 
     setTimeout(async () => {
       await router.push("/")
-    }, 0)
+    }, 100)
   } catch (e) {
     console.error(e)
   }

@@ -10,16 +10,18 @@ const apiRequestHandler: RequestListener = async (req, res) => {
       if (req.method === "POST") {
         return authController(req, res)
       }
+      break
     case "/logout":
       const deleteCookies = [makeDeleteCookie("userData"), makeDeleteCookie("token")]
       res.setHeader("Set-Cookie", deleteCookies)
       res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
 
-      return res.end('{}')
+      return res.end("{}")
     case "/token":
       if (req.method === "POST") {
         return tokenUpdateController(req, res)
       }
+      break
     case "/posts":
       if (req.method === "PUT" && /^\d+$/g.test(url?.[2] || "")) {
         return updatePostController(req, res)
@@ -32,6 +34,7 @@ const apiRequestHandler: RequestListener = async (req, res) => {
         if (/^\d+$/g.test(url?.[2] || "")) return getPostController(req, res)
         else return getPostsController(req, res)
       }
+      break
     default: // break or return is missing for purpose
       res.writeHead(404)
       return res.end(JSON.stringify(url) || req.url?.toString() || "404")
