@@ -23,6 +23,7 @@
           </div>
           <input type="text" class="form-control mt-3" placeholder="Изображение" v-model="post.data.files![0]" />
           <input type="text" class="form-control mt-3" placeholder="Изображение" v-model="post.data.files![1]" />
+          <input type="text" class="form-control mt-3" placeholder="Изображение" v-model="post.data.files![2]" />
         </template>
       </div>
     </div>
@@ -55,8 +56,6 @@ import { useStore } from "../store"
 const route = useRoute()
 const router = useRouter()
 const store = useStore()
-
-
 
 const viewMode = ref<boolean>(false)
 
@@ -108,10 +107,7 @@ const reset = () => {
 
 const renderedPost = computed<string>(() => md.render(post.value.data.content.trim()))
 
-const {
-  fetch: savePost,
-  isLoading: isLoading2
-} = useFetch(`/api/posts${/^\d+$/g.test(idx) ? "/" + (+idx - 1) : ""}`, /^\d+$/g.test(idx) ? "put" : "post", { post: post.value })
+const { fetch: savePost, isLoading: isLoading2 } = useFetch(`/api/posts${/^\d+$/g.test(idx) ? "/" + (+idx - 1) : ""}`, /^\d+$/g.test(idx) ? "put" : "post", { post: post.value })
 
 const onSubmit = async () => {
   try {

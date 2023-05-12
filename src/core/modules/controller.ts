@@ -19,7 +19,7 @@ export const authController: RequestListener = async (req, res) => {
     await dbService.getDB()
 
     for (const nickname in dbService.DB) {
-      if (nickname === username && (await bcrypt.compare(password, dbService.DB[nickname].hash))) {
+      if (nickname.trim().toLowerCase() === username.trim().toLowerCase() && (await bcrypt.compare(password, dbService.DB[nickname].hash))) {
         const userData: IUserData = {
           nickname,
           token: dbService.DB[nickname].token
@@ -34,10 +34,10 @@ export const authController: RequestListener = async (req, res) => {
     }
 
     throw new Error("User with this username and password wasn't found")
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: (<any>error).message!.toString() }))
+    return res.end(JSON.stringify({ error: error.message.toString() }))
   }
 }
 export const tokenUpdateController: RequestListener = async (req, res) => {
@@ -74,12 +74,12 @@ export const tokenUpdateController: RequestListener = async (req, res) => {
     res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
 
     return res.end(JSON.stringify({ message: "Token changed successfully" }))
-  } catch (error) {
+  } catch (error: any) {
     const cookiesToSend = [makeDeleteCookie("token"), makeDeleteCookie("userData")]
     res.setHeader("Set-Cookie", cookiesToSend)
     res.writeHead(400)
     console.error(error)
-    return res.end(JSON.stringify({ error: (<any>error).message!.toString() }))
+    return res.end(JSON.stringify({ error: error.message.toString() }))
   }
 }
 export const getPostsController: RequestListener = async (req, res) => {
@@ -105,10 +105,10 @@ export const getPostsController: RequestListener = async (req, res) => {
     res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
 
     return res.end(JSON.stringify({ posts: posts ?? [] }))
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: (<any>error).message!.toString() }))
+    return res.end(JSON.stringify({ error: error.message.toString() }))
   }
 }
 export const getPostController: RequestListener = async (req, res) => {
@@ -141,10 +141,10 @@ export const getPostController: RequestListener = async (req, res) => {
     res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
 
     return res.end(JSON.stringify({ post }))
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: (<any>error).message!.toString() }))
+    return res.end(JSON.stringify({ error: error.message.toString() }))
   }
 }
 export const updatePostController: RequestListener = async (req, res) => {
@@ -174,10 +174,10 @@ export const updatePostController: RequestListener = async (req, res) => {
     res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
 
     return res.end(JSON.stringify({ message: "Post changed successfully" }))
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: (<any>error).message!.toString() }))
+    return res.end(JSON.stringify({ error: error.message.toString() }))
   }
 }
 export const deletePostController: RequestListener = async (req, res) => {
@@ -205,10 +205,10 @@ export const deletePostController: RequestListener = async (req, res) => {
     res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
 
     return res.end(JSON.stringify({ message: "Post changed successfully" }))
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: (<any>error).message!.toString() }))
+    return res.end(JSON.stringify({ error: error.message.toString() }))
   }
 }
 export const createPostController: RequestListener = async (req, res) => {
@@ -237,9 +237,9 @@ export const createPostController: RequestListener = async (req, res) => {
     res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
 
     return res.end(JSON.stringify({ message: "Post created successfully" }))
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: (<any>error).message!.toString() }))
+    return res.end(JSON.stringify({ error: error.message.toString() }))
   }
 }
