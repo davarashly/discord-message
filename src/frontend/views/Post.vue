@@ -89,10 +89,7 @@ const post = ref<IMessage>({
 
 watch(originalPost, () => {
   if (!!originalPost.value?.data) {
-    post.value.data = { ...originalPost.value!.data }
-    post.value.channelId = originalPost.value!.channelId
-    post.value.active = originalPost.value!.active
-    post.value.status = originalPost.value!.status
+    post.value = { ...originalPost.value! }
   }
 })
 
