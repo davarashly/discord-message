@@ -2,9 +2,14 @@
   <div class="container">
     <div class="row">
       <div class="col">
-        <div class="posts">
+        <div v-if="isLoading" class="d-flex justify-content-center">
+          <div class="spinner-border ms-2 text-secondary" role="status" style="scale: 5; --bs-spinner-border-width: 0.07em">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        <div class="posts" v-else>
           <router-link :to="`/posts/${idx + 1}`" v-for="(post, idx) in renderedPosts" :class="{ disabled: !posts[idx].active, success: posts[idx].status === 'success', fail: posts[idx].status === 'fail' }" class="post text-white text-decoration-none">
-            <div class="p-2 delete" style="position: absolute; top: 0.5rem; right: 0.5rem" @click.prevent="deletePost(idx)">
+            <div class="p-2 delete" style="position: absolute; top: 0.5rem; right: 0.5rem" @click.prevent="deletePostHandler(idx)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
                 <path
                   d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"
@@ -30,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from "vue"
+import { computed, onBeforeMount, ref } from "vue"
 import { IMessage } from "../../core/interfaces/IMessage"
 import MarkdownIt from "markdown-it"
 import MarkdownItEmoji from "markdown-it-emoji"
@@ -48,26 +53,30 @@ const discordEmojis = gemoji.reduce((acc, cur) => {
 
 const md = new MarkdownIt().use(MarkdownItEmoji, { defs: discordEmojis })
 
+const { fetch, isLoading, data } = useFetch<{ posts: IMessage[] }>("/api/posts")
+
 const posts = ref<IMessage[]>([])
 const renderedPosts = computed<string[]>(() => posts.value.map((post) => md.render(post.data.content.trim().slice(0, 200)) + "..."))
 
-onMounted(async () => {
+onBeforeMount(async () => {
   try {
-    posts.value = (await fetch("/api/posts", { method: "get", credentials: "include" }).then((r) => r.json())).posts
+    await fetch()
+
+    posts.value = data.value?.posts || []
   } catch (e) {
     console.error(e)
   }
 })
 
-const deletePost = async (idx: number) => {
-  const { fetch } = useFetch(`/api/posts/${idx}`, "delete")
+const deletePostHandler = async (idx: number) => {
+  const { fetch: deletePost } = useFetch(`/api/posts/${idx}`, "delete")
 
   try {
     if (!confirm("Дядь, подумой, точно хочешь удалить?")) {
       return
     }
 
-    await fetch()
+    await deletePost()
     posts.value.splice(idx, 1)
   } catch (e) {
     console.error(e)

@@ -1,25 +1,29 @@
 import { computed, ref } from "vue"
 
-export default <T = any>(url: string, method = "get", payload?: any) => {
+export default <T = any>(url: string, method: "get" | "post" | "put" | "patch" | "delete" = "get", payload?: any) => {
   const res = ref<T>()
   const isLoading = ref<boolean>(false)
 
-  const reFetch = async () => {
+  const reFetch = async (newPayload = payload) => {
     try {
       isLoading.value = true
 
       const response = await fetch(url, {
         method,
-        headers: payload ? { "Content-Type": "application/json" } : undefined,
+        headers: newPayload ? { "Content-Type": "application/json" } : undefined,
         credentials: "include",
-        body: payload ? JSON.stringify(payload) : undefined
+        body: newPayload ? JSON.stringify(newPayload) : undefined
       })
 
       if (!response.ok) {
         throw new Error(response.status.toString())
       }
 
-      res.value = await response.json()
+      if (response.headers.get("Content-Type") === "application/json") {
+        res.value = await response.json()
+      } else {
+        res.value = (await response.text()) as T
+      }
     } catch (e) {
       throw e
     } finally {

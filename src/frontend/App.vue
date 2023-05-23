@@ -16,6 +16,9 @@ import Navbar from "./components/Navbar.vue"
 </script>
 
 <style lang="scss">
+$primary: #6f2da8;
+$primary: #826b20;
+
 @import "bootstrap";
 
 body {
@@ -47,5 +50,16 @@ input,
 textarea {
   background-color: rgba(0, 0, 0, 0.3) !important;
   color: #fff !important;
+}
+
+.btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 45.6px;
+
+  &.btn-primary {
+    color: #fff;
+  }
 }
 </style>
