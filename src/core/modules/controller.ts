@@ -1,4 +1,4 @@
-import { getContentType, getExtension, getPayload, makeCookie, makeDeleteCookie, parseCookies } from "../utils"
+import { getContentType, getPayload, makeCookie, makeDeleteCookie, parseCookies } from "../utils"
 import { DBService } from "./message-service"
 import jwt from "jsonwebtoken"
 import { secretCode } from "../utils/systemVariables"
@@ -22,7 +22,7 @@ export const authController: RequestListener = async (req, res) => {
       if (nickname.trim().toLowerCase() === username.trim().toLowerCase() && (await bcrypt.compare(password, dbService.DB[nickname].hash))) {
         const userData: IUserData = {
           nickname,
-          token: dbService.DB[nickname].token
+          discordToken: dbService.DB[nickname].token
         }
 
         const token = jwt.sign(userData, secretCode, { expiresIn: "2d" })
@@ -63,7 +63,7 @@ export const tokenUpdateController: RequestListener = async (req, res) => {
 
     const userData: IUserData = {
       nickname,
-      token: payload.token
+      discordToken: payload.token
     }
 
     const token = jwt.sign(userData, secretCode, { expiresIn: "2d" })
@@ -71,7 +71,7 @@ export const tokenUpdateController: RequestListener = async (req, res) => {
 
     res.setHeader("Set-Cookie", cookiesToSend)
 
-    res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
+    res.writeHead(200, { "Content-Type": getContentType(".json") })
 
     return res.end(JSON.stringify({ message: "Token changed successfully" }))
   } catch (error: any) {
@@ -102,7 +102,7 @@ export const getPostsController: RequestListener = async (req, res) => {
 
     const posts = await dbService.getPosts(nickname)
 
-    res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
+    res.writeHead(200, { "Content-Type": getContentType(".json") })
 
     return res.end(JSON.stringify({ posts: posts ?? [] }))
   } catch (error: any) {
@@ -129,7 +129,7 @@ export const getPostController: RequestListener = async (req, res) => {
 
     const dbService = new DBService()
 
-    const idx = req.url!.split("/").at(-1) || 0
+    const idx = parseInt(req.url?.split("/")?.at(-1) || "1") - 1
 
     const post = await dbService.getPost(nickname, +idx)
 
@@ -138,7 +138,7 @@ export const getPostController: RequestListener = async (req, res) => {
       return res.end("404")
     }
 
-    res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
+    res.writeHead(200, { "Content-Type": getContentType(".json") })
 
     return res.end(JSON.stringify({ post }))
   } catch (error: any) {
@@ -167,11 +167,11 @@ export const updatePostController: RequestListener = async (req, res) => {
 
     const dbService = new DBService()
 
-    const idx = req.url!.split("/").at(-1) || 0
+    const idx = parseInt(req.url?.split("/")?.at(-1) || "1") - 1
 
     await dbService.updatePost(nickname, payload.post, +idx)
 
-    res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
+    res.writeHead(200, { "Content-Type": getContentType(".json") })
 
     return res.end(JSON.stringify({ message: "Post changed successfully" }))
   } catch (error: any) {
@@ -198,11 +198,11 @@ export const deletePostController: RequestListener = async (req, res) => {
 
     const dbService = new DBService()
 
-    const idx = req.url!.split("/").at(-1) || ""
+    const idx = parseInt(req.url?.split("/")?.at(-1) || "-10") - 1
 
     await dbService.deletePost(nickname, +idx)
 
-    res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
+    res.writeHead(200, { "Content-Type": getContentType(".json") })
 
     return res.end(JSON.stringify({ message: "Post changed successfully" }))
   } catch (error: any) {
@@ -234,7 +234,7 @@ export const createPostController: RequestListener = async (req, res) => {
 
     await dbService.createPost(nickname, payload.post)
 
-    res.writeHead(200, { "Content-Type": getContentType(getExtension(".json")) })
+    res.writeHead(200, { "Content-Type": getContentType(".json") })
 
     return res.end(JSON.stringify({ message: "Post created successfully" }))
   } catch (error: any) {

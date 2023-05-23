@@ -1,5 +1,5 @@
 import { RequestListener, createServer } from "http"
-import { getContentType, getExtension, pathResolve } from "../utils"
+import { getContentType, pathResolve } from "../utils"
 import fs from "fs/promises"
 import SocketMgr from "./socket"
 import { isProd } from "../utils/systemVariables"
@@ -18,7 +18,7 @@ const requestListener: RequestListener = async (req, res) => {
 
     const file = await fs.readFile(filePath)
 
-    res.writeHead(200, { "Content-Type": getContentType(getExtension(req.url!)) })
+    res.writeHead(200, { "Content-Type": getContentType(req.url!) })
 
     return res.end(file)
   } catch (e) {

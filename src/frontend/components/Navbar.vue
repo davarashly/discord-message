@@ -9,7 +9,7 @@
           <li v-for="link in links" class="nav-item text-center">
             <router-link class="nav-link" :class="{ active: isRouteActive(link.url) }" :exact="!!link.exact" :to="link.url">{{ link.text }} </router-link>
           </li>
-          <li v-if="!!store.userData?.token" class="nav-item text-center border-start ms-md-4 ps-md-4">
+          <li v-if="!!store.userData?.nickname" class="nav-item text-center border-start ms-md-4 ps-md-4">
             <a href="#" class="nav-link" @click.prevent="logOut">Выйти</a>
           </li>
         </ul>
@@ -45,13 +45,17 @@ const { fetch } = useFetch("/api/logout")
 
 const logOut = async () => {
   try {
-    await fetch()
+    store.cleanUserData()
 
-    store.updateUserData()
+    await router
+      .push("/login")
+      .then(() => fetch())
+      .finally(() => {
+        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; SameSite=Lax"
+        document.cookie = "userData=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; SameSite=Lax"
+      })
 
-    setTimeout(async () => {
-      await router.push("/")
-    }, 100)
+    setTimeout(async () => {}, 100)
   } catch (e) {
     console.error(e)
   }

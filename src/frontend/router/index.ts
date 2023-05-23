@@ -1,15 +1,16 @@
 import { createRouter, createWebHistory, Router, RouteRecordRaw } from "vue-router"
 import Home from "../views/Home.vue"
+import Post from "../views/Post.vue"
 import Settings from "../views/Settings.vue"
+import Login from "../views/Login.vue"
 import { useStore } from "../store"
 
 const routes: RouteRecordRaw[] = [
-  // Add your routes here
   { path: "/", redirect: "/posts" },
   { path: "/posts", component: Home },
-  { path: "/posts/:idx", component: () => import("../views/Post.vue") },
-  { path: "/settings", component: () => import("../views/Settings.vue") },
-  { path: "/login", component: () => import("../views/Login.vue") }
+  { path: "/posts/:idx", component: Post },
+  { path: "/settings", component: Settings },
+  { path: "/login", component: Login }
 ]
 
 const router: Router = createRouter({

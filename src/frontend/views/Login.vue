@@ -8,7 +8,13 @@
       <label for="password" class="form-label">Пароль</label>
       <input v-model="user.password" type="password" class="form-control" id="password" />
     </div>
-    <input class="btn btn-dark" name="submit_form" type="submit" value="Вход" />
+
+    <button class="btn btn-primary" name="submit_form">
+      Вход
+      <div v-if="isLoading" class="spinner-border ms-2" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </button>
   </form>
 </template>
 
@@ -16,16 +22,17 @@
 import { reactive } from "vue"
 import { useRouter } from "vue-router"
 import { useStore } from "../store"
+import useFetch from "../compositions/useFetch"
 
 const router = useRouter()
 const store = useStore()
 
 const user = reactive<{ username: string; password: string }>({ username: "", password: "" })
+const { fetch, isLoading } = useFetch("/api/auth", "post")
 
 const onSubmit = async () => {
   try {
-    await fetch("/api/auth", { method: "post", body: JSON.stringify(user), credentials: "include" })
-
+    await fetch(user)
     store.updateUserData()
 
     await router.push("/")
