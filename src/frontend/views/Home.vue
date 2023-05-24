@@ -9,7 +9,7 @@
         </div>
         <div class="posts" v-else>
           <router-link :to="`/posts/${idx + 1}`" v-for="(post, idx) in renderedPosts" :class="{ disabled: !posts[idx].active, success: posts[idx].status === 'success', fail: posts[idx].status === 'fail' }" class="post text-white text-decoration-none">
-            <div class="p-2 delete" style="position: absolute; top: 0.5rem; right: 0.5rem" @click.prevent="deletePostHandler(idx)">
+            <div class="p-2 delete" style="position: absolute; top: 0.5rem; right: 0.5rem" @click.prevent="deletePostHandler(idx + 1)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
                 <path
                   d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"
@@ -77,7 +77,7 @@ const deletePostHandler = async (idx: number) => {
     }
 
     await deletePost()
-    posts.value.splice(idx, 1)
+    posts.value.splice(idx - 1, 1)
   } catch (e) {
     console.error(e)
   }
