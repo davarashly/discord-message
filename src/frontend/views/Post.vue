@@ -119,11 +119,11 @@ const reset = (skipConfirm = false) => {
 
 const renderedPost = computed<string>(() => md.render(post.value.data.content.trim()))
 
-const { fetch: savePost, isLoading: isLoading2 } = useFetch(`/api/posts/${/^\d+$/g.test(idx) ? idx : ""}`, /^\d+$/g.test(idx) ? "put" : "post", { post: post.value })
+const { fetch: savePost, isLoading: isLoading2 } = useFetch(`/api/posts/${/^\d+$/g.test(idx) ? idx : ""}`, /^\d+$/g.test(idx) ? "put" : "post")
 
 const onSubmit = async () => {
   try {
-    await savePost()
+    await savePost({ post: post.value })
     await router.push("/")
   } catch (e) {
     console.error(e)
