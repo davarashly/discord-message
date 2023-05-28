@@ -111,6 +111,38 @@ export const getPostsController: RequestListener = async (req, res) => {
     return res.end(JSON.stringify({ error: error.message.toString() }))
   }
 }
+
+export const updatePostsOrderController: RequestListener = async (req, res) => {
+  const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
+
+  if (!cookies.token || cookies.token.toString().length < 10) {
+    res.writeHead(400)
+    return res.end()
+  }
+
+  try {
+    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
+    const { nickname } = JSON.parse(cookies.userData ?? "{}")
+
+    if (jwtPayload.nickname !== nickname) {
+      throw new Error()
+    }
+
+    const payload = await getPayload<[number, number]>(req)
+
+    const dbService = new DBService()
+
+    await dbService.swapPosts(nickname, ...payload)
+
+    res.writeHead(200, { "Content-Type": getContentType(".json") })
+
+    return res.end(JSON.stringify({ message: "Post order changed successfully" }))
+  } catch (error: any) {
+    console.error(error)
+    res.writeHead(400)
+    return res.end(JSON.stringify({ error: error.message.toString() }))
+  }
+}
 export const getPostController: RequestListener = async (req, res) => {
   const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
 

@@ -8,7 +8,18 @@
           </div>
         </div>
         <div class="posts" v-else>
-          <router-link :to="`/posts/${idx + 1}`" v-for="(post, idx) in renderedPosts" :class="{ disabled: !posts[idx].active, success: posts[idx].status === 'success', fail: posts[idx].status === 'fail' }" class="post text-white text-decoration-none">
+          <router-link
+            draggable="true"
+            @dragstart="onDrag($event, idx)"
+            @drop="onDrop($event, idx)"
+            @dragover.prevent="dd.drag !== idx && (dd.drop = idx)"
+            @dragleave.prevent="dd.drop = -1"
+            @dragend.prevent="dd.drag = -1"
+            :to="`/posts/${idx + 1}`"
+            v-for="(post, idx) in renderedPosts"
+            :class="{ dragging: dd.drag === idx, dropping: dd.drop === idx, disabled: !posts[idx].active, success: posts[idx].status === 'success', fail: posts[idx].status === 'fail' }"
+            class="post text-white text-decoration-none"
+          >
             <div class="p-2 delete" style="position: absolute; top: 0.5rem; right: 0.5rem" @click.prevent="deletePostHandler(idx + 1)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
                 <path
@@ -35,7 +46,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref } from "vue"
+import { computed, onBeforeMount, reactive, ref, watch } from "vue"
 import { IMessage } from "../../core/interfaces/IMessage"
 import MarkdownIt from "markdown-it"
 import MarkdownItEmoji from "markdown-it-emoji"
@@ -66,6 +77,34 @@ onBeforeMount(async () => {
   } catch (e) {
     console.error(e)
   }
+})
+
+const onDrag = (evt: DragEvent, postIdx: number) => {
+  evt.dataTransfer!.dropEffect = "move"
+  evt.dataTransfer!.effectAllowed = "move"
+
+  dd.drag = postIdx
+}
+
+const onDrop = async (evt: DragEvent, postIdx: number) => {
+  if (dd.drag === -1) {
+    return
+  }
+
+  const dragPostIdx = dd.drag
+
+  const tmp = posts.value[dragPostIdx]
+
+  posts.value[dragPostIdx] = posts.value[postIdx]
+  posts.value[postIdx] = tmp
+
+  const { fetch, isLoading } = useFetch("/api/posts/order", "put", [dd.drag, dd.drop])
+  await fetch()
+}
+
+const dd = reactive<Record<"drag" | "drop", number>>({
+  drag: -1,
+  drop: -1
 })
 
 const deletePostHandler = async (idx: number) => {
@@ -103,6 +142,24 @@ const deletePostHandler = async (idx: number) => {
     margin-bottom: 2rem;
     transition: 0.2s;
     position: relative;
+
+    & > * {
+      pointer-events: none;
+    }
+
+    img {
+      max-height: 280px;
+    }
+
+    &.dragging {
+      opacity: 0.45;
+      background-color: var(--bs-dark);
+    }
+
+    &.dropping {
+      //opacity: 0.45;
+      background-color: #333;
+    }
 
     &.disabled {
       overflow: hidden;
@@ -153,6 +210,7 @@ const deletePostHandler = async (idx: number) => {
     }
 
     .delete {
+      pointer-events: auto;
       border-radius: 0.5rem;
       width: 40px;
       height: 40px;
