@@ -131,6 +131,25 @@ export class DBService {
     await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
   }
 
+  async swapPosts(nickname: keyof DB, postIdx: number, postIdx2: number) {
+    await this.getDB()
+
+    if (!this.DB[nickname]) {
+      throw new Error()
+    }
+
+    if (!this.DB[nickname].posts?.[postIdx] || !this.DB[nickname].posts?.[postIdx2]) {
+      return
+    }
+
+    const tmp = this.DB[nickname].posts[postIdx]
+
+    this.DB[nickname].posts[postIdx] = this.DB[nickname].posts[postIdx2]
+    this.DB[nickname].posts[postIdx2] = tmp
+
+    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
+  }
+
   async createPost(nickname: keyof DB, post: IMessage) {
     await this.getDB()
 
