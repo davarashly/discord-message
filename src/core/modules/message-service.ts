@@ -1,8 +1,7 @@
 import * as fs from "fs/promises"
 import { hrsToMilliseconds, jsonCleanComments, pathResolve } from "../utils"
 import { DB, IMessage } from "../interfaces/IMessage"
-import { Client, Intents, TextChannel } from "discord.js-user-account"
-import logger from "./logger"
+import { DiscordService } from "./discord-service"
 
 class WriteQueue {
   private queue: (() => Promise<void>)[] = []
@@ -28,9 +27,11 @@ export class DBService {
 
   private _DB: DB
   private writeQueue = new WriteQueue()
+  private discordService: DiscordService
 
   constructor() {
     this._DB = {}
+    this.discordService = new DiscordService()
   }
 
   async getDB() {
@@ -51,42 +52,20 @@ export class DBService {
             continue
           }
 
-          const client = new Client({ intents: [Intents.FLAGS.DIRECT_MESSAGES], loginAsUserAccount: true })
-
           const {
             channelId,
             data: { content, files },
             token
           } = post
 
-          client.on("ready", (client) => {
-            const channel = client.channels.cache.get(channelId) as TextChannel
+          const result = await this.discordService.sendMessage(token || this.DB[nickname].token, channelId, content, files || [])
 
-            channel
-              .send({ files: files?.filter((f) => !!f), content })
-              .then(async () => {
-                logger.log(`Message was sent as a user '${client.user.tag}' to the channel '${channel.name}': ${content}`)
-
-                if (post.status !== "success") {
-                  post.status = "success"
-                  await this.updatePost(nickname, post, i)
-                }
-                console.log()
-              })
-              .catch(async (e) => {
-                console.error(e)
-                logger.error(e)
-                if (post.status !== "fail") {
-                  post.status = "fail"
-                  await this.updatePost(nickname, post, i)
-                }
-              })
-          })
-
-          try {
-            await client.login(token || this.DB[nickname].token)
-          } catch (e) {
-            logger.error(`\`${nickname}\` has invalid discord token.`)
+          if (result) {
+            post.status = "success"
+            await this.updatePost(nickname, post, i)
+          } else {
+            post.status = "fail"
+            await this.updatePost(nickname, post, i)
           }
         }
       }
@@ -103,16 +82,21 @@ export class DBService {
     })
   }
 
-  async setToken(nickname: keyof DB, token: string) {
+  private async modifyDB(modification: (db: DB) => void) {
     await this.getDB()
+    modification(this.DB)
+    await this.writeFile(this.DB)
+  }
 
-    if (!this.DB[nickname]) {
-      throw new Error()
+  async setToken(nickname: keyof DB, token: string) {
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
+      db[nickname].token = token
     }
 
-    this.DB[nickname].token = token
-
-    await this.writeFile(this.DB)
+    await this.modifyDB(handler)
   }
 
   async getPosts(nickname: keyof DB): Promise<IMessage[]> {
@@ -136,73 +120,72 @@ export class DBService {
   }
 
   async updatePost(nickname: keyof DB, post: IMessage, idx: number) {
-    await this.getDB()
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
 
-    if (!this.DB[nickname]) {
-      throw new Error()
+      if (!db[nickname].posts) {
+        db[nickname].posts = []
+      }
+
+      if (!db[nickname].posts[idx]) {
+        idx = db[nickname].posts.length
+      }
+
+      db[nickname].posts[idx] = post
     }
 
-    if (!this.DB[nickname].posts) {
-      this.DB[nickname].posts = []
-    }
-
-    if (!this.DB[nickname].posts[idx]) {
-      idx = this.DB[nickname].posts.length
-    }
-
-    this.DB[nickname].posts[idx] = post
-
-    await this.writeFile(this.DB)
+    await this.modifyDB(handler)
   }
 
   async swapPosts(nickname: keyof DB, postIdx: number, postIdx2: number) {
-    await this.getDB()
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
 
-    if (!this.DB[nickname]) {
-      throw new Error()
+      if (!db[nickname].posts?.[postIdx] || !db[nickname].posts?.[postIdx2]) {
+        return
+      }
+
+      const tmp = db[nickname].posts[postIdx]
+      db[nickname].posts[postIdx] = db[nickname].posts[postIdx2]
+      db[nickname].posts[postIdx2] = tmp
     }
 
-    if (!this.DB[nickname].posts?.[postIdx] || !this.DB[nickname].posts?.[postIdx2]) {
-      return
-    }
-
-    const tmp = this.DB[nickname].posts[postIdx]
-
-    this.DB[nickname].posts[postIdx] = this.DB[nickname].posts[postIdx2]
-    this.DB[nickname].posts[postIdx2] = tmp
-
-    await this.writeFile(this.DB)
+    await this.modifyDB(handler)
   }
 
   async createPost(nickname: keyof DB, post: IMessage) {
-    await this.getDB()
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
 
-    if (!this.DB[nickname]) {
-      throw new Error()
+      if (!db[nickname].posts) {
+        db[nickname].posts = []
+      }
+
+      db[nickname].posts.push(post)
     }
 
-    if (!this.DB[nickname].posts) {
-      this.DB[nickname].posts = []
-    }
-
-    this.DB[nickname].posts.push(post)
-
-    await this.writeFile(this.DB)
+    await this.modifyDB(handler)
   }
 
   async deletePost(nickname: keyof DB, idx: number) {
-    await this.getDB()
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
 
-    if (!this.DB[nickname]) {
-      throw new Error()
+      if (!db[nickname].posts) {
+        db[nickname].posts = []
+      }
+
+      db[nickname].posts.splice(idx, 1)
     }
 
-    if (!this.DB[nickname].posts) {
-      this.DB[nickname].posts = []
-    }
-
-    this.DB[nickname].posts.splice(idx, 1)
-
-    await this.writeFile(this.DB)
+    await this.modifyDB(handler)
   }
 }
