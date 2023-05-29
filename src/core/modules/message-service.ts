@@ -4,12 +4,30 @@ import { DB, IMessage } from "../interfaces/IMessage"
 import { Client, Intents, TextChannel } from "discord.js-user-account"
 import logger from "./logger"
 
+class WriteQueue {
+  private queue: (() => Promise<void>)[] = []
+  private isWriting = false
+
+  async add(writeFunction: () => Promise<void>) {
+    this.queue.push(writeFunction)
+    if (!this.isWriting) {
+      this.isWriting = true
+      while (this.queue.length > 0) {
+        const write = this.queue.shift()!
+        await write()
+      }
+      this.isWriting = false
+    }
+  }
+}
+
 export class DBService {
   get DB(): DB {
     return this._DB
   }
 
   private _DB: DB
+  private writeQueue = new WriteQueue()
 
   constructor() {
     this._DB = {}
@@ -79,6 +97,12 @@ export class DBService {
     await handler.call(this)
   }
 
+  async writeFile(data: DB) {
+    await this.writeQueue.add(async () => {
+      await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(data, null, 2))
+    })
+  }
+
   async setToken(nickname: keyof DB, token: string) {
     await this.getDB()
 
@@ -88,7 +112,7 @@ export class DBService {
 
     this.DB[nickname].token = token
 
-    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
+    await this.writeFile(this.DB)
   }
 
   async getPosts(nickname: keyof DB): Promise<IMessage[]> {
@@ -128,7 +152,7 @@ export class DBService {
 
     this.DB[nickname].posts[idx] = post
 
-    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
+    await this.writeFile(this.DB)
   }
 
   async swapPosts(nickname: keyof DB, postIdx: number, postIdx2: number) {
@@ -147,7 +171,7 @@ export class DBService {
     this.DB[nickname].posts[postIdx] = this.DB[nickname].posts[postIdx2]
     this.DB[nickname].posts[postIdx2] = tmp
 
-    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
+    await this.writeFile(this.DB)
   }
 
   async createPost(nickname: keyof DB, post: IMessage) {
@@ -163,7 +187,7 @@ export class DBService {
 
     this.DB[nickname].posts.push(post)
 
-    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
+    await this.writeFile(this.DB)
   }
 
   async deletePost(nickname: keyof DB, idx: number) {
@@ -179,6 +203,6 @@ export class DBService {
 
     this.DB[nickname].posts.splice(idx, 1)
 
-    await fs.writeFile(pathResolve(process.cwd(), "config", "DB.json"), JSON.stringify(this.DB, null, 2))
+    await this.writeFile(this.DB)
   }
 }
