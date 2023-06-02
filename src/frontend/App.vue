@@ -7,7 +7,7 @@
       <router-view />
     </div>
   </main>
-  <footer class="p-3 bg-dark text-white text-center">Venom Motorz</footer>
+  <footer class="p-3 bg-dark text-white text-center">Discord Market</footer>
 </template>
 
 <script lang="ts" setup>

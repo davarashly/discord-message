@@ -29,7 +29,7 @@ const { fetch, isLoading } = useFetch("/api/token", "post")
 
 const onSubmit = async () => {
   try {
-    await fetch({ token: token.value })
+    await fetch({ discordToken: token.value })
     store.updateUserData()
 
     await router.push("/")

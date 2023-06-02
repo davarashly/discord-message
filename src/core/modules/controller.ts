@@ -22,7 +22,8 @@ export const authController: RequestListener = async (req, res) => {
       if (nickname.trim().toLowerCase() === username.trim().toLowerCase() && (await bcrypt.compare(password, dbService.DB[nickname].hash))) {
         const userData: IUserData = {
           nickname,
-          discordToken: dbService.DB[nickname].token
+          discordToken: dbService.DB[nickname].discordToken,
+          isTokenValid: dbService.DB[nickname].isTokenValid
         }
 
         const token = jwt.sign(userData, secretCode, { expiresIn: "2d" })
@@ -56,14 +57,16 @@ export const tokenUpdateController: RequestListener = async (req, res) => {
       throw new Error()
     }
 
-    const payload = await getPayload<{ token: string }>(req)
+    const payload = await getPayload<{ discordToken: string }>(req)
     const dbService = new DBService()
 
-    await dbService.setToken(nickname, payload.token)
+    await dbService.getDB()
+    await dbService.setToken(nickname, payload.discordToken, true)
 
     const userData: IUserData = {
       nickname,
-      discordToken: payload.token
+      discordToken: payload.discordToken,
+      isTokenValid: true
     }
 
     const token = jwt.sign(userData, secretCode, { expiresIn: "2d" })

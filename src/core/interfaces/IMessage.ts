@@ -15,6 +15,7 @@ export interface DB {
   [nickName: string]: {
     posts: IMessage[]
     hash: string
-    token: string
+    discordToken: string
+    isTokenValid: boolean
   }
 }

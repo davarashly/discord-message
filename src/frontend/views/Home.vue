@@ -2,7 +2,13 @@
   <div class="container">
     <div class="row">
       <div class="col">
-        <div v-if="isLoading" class="d-flex justify-content-center">
+        <div v-if="!isTokenValid" class="text-center">
+          <p class="display-5">Твой Дискорд токен больше не действителен.</p>
+          <p class="display-6">
+            <router-link to="/settings">Обнови его</router-link>
+          </p>
+        </div>
+        <div v-else-if="isLoading" class="d-flex justify-content-center">
           <div class="spinner-border ms-2 text-secondary" role="status" style="scale: 5; --bs-spinner-border-width: 0.07em">
             <span class="visually-hidden">Loading...</span>
           </div>
@@ -16,7 +22,7 @@
             @dragleave.prevent="dd.drop = -1"
             @dragend.prevent="dd.drag = -1"
             :to="`/posts/${idx + 1}`"
-            v-for="(post, idx) in renderedPosts"
+            v-for="(_post, idx) in renderedPosts"
             :class="{ dragging: dd.drag === idx, dropping: dd.drop === idx, disabled: !posts[idx].active, success: posts[idx].status === 'success', fail: posts[idx].status === 'fail' }"
             class="post text-white text-decoration-none"
           >
@@ -46,12 +52,17 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeMount, reactive, ref, watch } from "vue"
+import { computed, onBeforeMount, reactive, ref } from "vue"
 import { IMessage } from "../../core/interfaces/IMessage"
 import MarkdownIt from "markdown-it"
 import MarkdownItEmoji from "markdown-it-emoji"
 import { gemoji } from "gemoji"
 import useFetch from "../compositions/useFetch"
+import { useStore } from "../store"
+
+const store = useStore()
+
+const isTokenValid = computed<boolean>(() => !!store.userData!.isTokenValid)
 
 const discordEmojis = gemoji.reduce((acc, cur) => {
   if (cur.emoji) {
@@ -98,7 +109,7 @@ const onDrop = async (evt: DragEvent, postIdx: number) => {
   posts.value[dragPostIdx] = posts.value[postIdx]
   posts.value[postIdx] = tmp
 
-  const { fetch, isLoading } = useFetch("/api/posts/order", "put", [dd.drag, dd.drop])
+  const { fetch } = useFetch("/api/posts/order", "put", [dd.drag, dd.drop])
   await fetch()
 }
 
