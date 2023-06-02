@@ -58,15 +58,25 @@ export class DBService {
             token
           } = post
 
-          const result = await this.discordService.sendMessage(token || this.DB[nickname].token, channelId, content, files || [])
+          let isTokenValid = this.DB[nickname].isTokenValid ?? true
+
+          const result = await this.discordService.sendMessage(token || this.DB[nickname].discordToken, channelId, content, files || []).catch((e) => {
+            if (e.code === "TOKEN_INVALID" || (typeof e.code === "number" && e.code >= 500 && e.code !== 502)) {
+              isTokenValid = false
+            }
+          })
 
           if (result) {
             post.status = "success"
-            await this.updatePost(nickname, post, i)
           } else {
             post.status = "fail"
-            await this.updatePost(nickname, post, i)
           }
+
+          if (isTokenValid !== this.DB[nickname].isTokenValid) {
+            await this.setIsTokenValid(nickname, isTokenValid)
+          }
+
+          await this.updatePost(nickname, post, i)
         }
       }
 
@@ -88,12 +98,27 @@ export class DBService {
     await this.writeFile(this.DB)
   }
 
-  async setToken(nickname: keyof DB, token: string) {
+  async setToken(nickname: keyof DB, token: string, updateIsTokenValid = false) {
     const handler = (db: DB) => {
       if (!db[nickname]) {
         throw new Error(`No record found for nickname: ${nickname}`)
       }
-      db[nickname].token = token
+      db[nickname].discordToken = token
+
+      if (updateIsTokenValid) {
+        db[nickname].isTokenValid = true
+      }
+    }
+
+    await this.modifyDB(handler)
+  }
+
+  async setIsTokenValid(nickname: keyof DB, isTokenValid: boolean) {
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
+      db[nickname].isTokenValid = isTokenValid
     }
 
     await this.modifyDB(handler)
