@@ -1,8 +1,8 @@
 import { defineStore, _GettersTree } from "pinia"
-import { IUserData } from "../../core/interfaces"
+import { IUserData } from "../../core/types"
 
 export type RootState = {
-  userData: Partial<IUserData> | undefined
+  userData?: IUserData
 }
 
 export const useStore = defineStore<
@@ -16,7 +16,7 @@ export const useStore = defineStore<
 >({
   id: "userData",
   state: () => ({
-    userData: document.cookie ? JSON.parse(document.cookie.replace("userData=", "")) : undefined
+    userData: document.cookie ? JSON.parse(document.cookie.replace("userData=", "")) : undefined,
   }),
   actions: {
     updateUserData() {
@@ -26,6 +26,6 @@ export const useStore = defineStore<
     },
     cleanUserData() {
       this.userData = undefined
-    }
-  }
+    },
+  },
 })

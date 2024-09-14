@@ -1,11 +1,21 @@
 import * as fs from "fs/promises"
-import { hrsToMilliseconds, jsonCleanComments, pathResolve } from "../utils"
-import { DB, IMessage } from "../interfaces/IMessage"
-import { DiscordService } from "./discord-service"
+import { jsonCleanComments, pathResolve } from "../utils"
+import { IRoom, DB } from "../types"
 
+// Singleton WriteQueue class for managing write operations
 class WriteQueue {
+  private static instance: WriteQueue
   private queue: (() => Promise<void>)[] = []
   private isWriting = false
+
+  private constructor() {}
+
+  static getInstance(): WriteQueue {
+    if (!WriteQueue.instance) {
+      WriteQueue.instance = new WriteQueue()
+    }
+    return WriteQueue.instance
+  }
 
   async add(writeFunction: () => Promise<void>) {
     this.queue.push(writeFunction)
@@ -20,70 +30,34 @@ class WriteQueue {
   }
 }
 
+// Singleton DBService class
 export class DBService {
+  private static instance: DBService | null = null
+
   get DB(): DB {
     return this._DB
   }
 
   private _DB: DB
-  private writeQueue = new WriteQueue()
-  private discordService: DiscordService
+  private writeQueue = WriteQueue.getInstance() // Use shared WriteQueue
 
-  constructor() {
+  // Private constructor to prevent direct instantiation
+  private constructor() {
     this._DB = {}
-    this.discordService = new DiscordService()
   }
 
-  async getDB() {
-    const dbFile = await fs.readFile(pathResolve(process.cwd(), "config", "DB.json"))
-
-    this._DB = jsonCleanComments(dbFile.toString())
-  }
-
-  async processMessages() {
-    async function handler(this: DBService) {
-      await this.getDB()
-
-      for (const nickname in this.DB) {
-        for (let i = 0; i < this.DB[nickname].posts?.length; i++) {
-          const post = this.DB[nickname].posts[i]
-
-          if (!post.active) {
-            continue
-          }
-
-          const {
-            channelId,
-            data: { content, files },
-            token
-          } = post
-
-          let isTokenValid = this.DB[nickname].isTokenValid ?? true
-
-          const result = await this.discordService.sendMessage(token || this.DB[nickname].discordToken, channelId, content, files || []).catch((e) => {
-            if (e.code === "TOKEN_INVALID" || (typeof e.code === "number" && e.code >= 500 && e.code !== 502)) {
-              isTokenValid = false
-            }
-          })
-
-          if (result) {
-            post.status = "success"
-          } else {
-            post.status = "fail"
-          }
-
-          if (isTokenValid !== this.DB[nickname].isTokenValid) {
-            await this.setIsTokenValid(nickname, isTokenValid)
-          }
-
-          await this.updatePost(nickname, post, i)
-        }
-      }
-
-      setTimeout(handler.bind(this), hrsToMilliseconds(0.51))
+  static getInstance(): DBService {
+    if (!DBService.instance) {
+      DBService.instance = new DBService()
     }
 
-    await handler.call(this)
+    return DBService.instance
+  }
+
+  // Load the DB from a file
+  async getDB() {
+    const dbFile = await fs.readFile(pathResolve(process.cwd(), "config", "DB.json"))
+    this._DB = jsonCleanComments(dbFile.toString())
   }
 
   async writeFile(data: DB) {
@@ -98,117 +72,156 @@ export class DBService {
     await this.writeFile(this.DB)
   }
 
-  async setToken(nickname: keyof DB, token: string, updateIsTokenValid = false) {
-    const handler = (db: DB) => {
-      if (!db[nickname]) {
-        throw new Error(`No record found for nickname: ${nickname}`)
-      }
-      db[nickname].discordToken = token
-
-      if (updateIsTokenValid) {
-        db[nickname].isTokenValid = true
-      }
-    }
-
-    await this.modifyDB(handler)
-  }
-
-  async setIsTokenValid(nickname: keyof DB, isTokenValid: boolean) {
-    const handler = (db: DB) => {
-      if (!db[nickname]) {
-        throw new Error(`No record found for nickname: ${nickname}`)
-      }
-      db[nickname].isTokenValid = isTokenValid
-    }
-
-    await this.modifyDB(handler)
-  }
-
-  async getPosts(nickname: keyof DB): Promise<IMessage[]> {
+  async getRooms(nickname: keyof DB): Promise<IRoom[]> {
     await this.getDB()
 
     if (!this.DB[nickname]) {
-      throw new Error()
+      throw new Error(`No record found for nickname: ${nickname}`)
     }
 
-    return this.DB[nickname].posts
+    return Object.values(this.DB[nickname].rooms) ?? []
   }
 
-  async getPost(nickname: keyof DB, idx: number): Promise<IMessage> {
+  async getRoom(nickname: keyof DB, author: string, id: string): Promise<IRoom> {
     await this.getDB()
 
     if (!this.DB[nickname]) {
-      throw new Error()
+      throw new Error(`No record found for nickname: ${nickname}`)
     }
 
-    return this.DB[nickname].posts?.[idx]
+    if (!this.DB[author]) {
+      throw new Error(`No record found for author: ${author}`)
+    }
+
+    if (!this.DB[author].rooms[id]) {
+      throw new Error(`Room with ID: ${id} not found`)
+    }
+
+    return this.DB[author].rooms[id]
   }
 
-  async updatePost(nickname: keyof DB, post: IMessage, idx: number) {
+  async incrementRoomWatchersCount(nickname: keyof DB, id: string) {
     const handler = (db: DB) => {
       if (!db[nickname]) {
         throw new Error(`No record found for nickname: ${nickname}`)
       }
 
-      if (!db[nickname].posts) {
-        db[nickname].posts = []
+      if (!db[nickname].rooms) {
+        db[nickname].rooms = {}
       }
 
-      if (!db[nickname].posts[idx]) {
-        idx = db[nickname].posts.length
+      if (!db[nickname].rooms[id]) {
+        throw new Error(`Room with ID: ${id} not found`)
       }
 
-      db[nickname].posts[idx] = post
+      db[nickname].rooms[id].watchers++
     }
 
-    await this.modifyDB(handler)
+    return await this.modifyDB(handler).then(() => this.DB[nickname].rooms[id])
   }
 
-  async swapPosts(nickname: keyof DB, postIdx: number, postIdx2: number) {
+  async decrementRoomWatchersCount(nickname: keyof DB, id: string) {
     const handler = (db: DB) => {
       if (!db[nickname]) {
         throw new Error(`No record found for nickname: ${nickname}`)
       }
 
-      if (!db[nickname].posts?.[postIdx] || !db[nickname].posts?.[postIdx2]) {
-        return
+      if (!db[nickname].rooms) {
+        db[nickname].rooms = {}
       }
 
-      const tmp = db[nickname].posts[postIdx]
-      db[nickname].posts[postIdx] = db[nickname].posts[postIdx2]
-      db[nickname].posts[postIdx2] = tmp
-    }
-
-    await this.modifyDB(handler)
-  }
-
-  async createPost(nickname: keyof DB, post: IMessage) {
-    const handler = (db: DB) => {
-      if (!db[nickname]) {
-        throw new Error(`No record found for nickname: ${nickname}`)
+      if (!db[nickname].rooms[id]) {
+        throw new Error(`Room with ID: ${id} not found`)
       }
 
-      if (!db[nickname].posts) {
-        db[nickname].posts = []
-      }
-
-      db[nickname].posts.push(post)
+      db[nickname].rooms[id].watchers--
     }
 
     await this.modifyDB(handler)
   }
 
-  async deletePost(nickname: keyof DB, idx: number) {
+  async updateRoom(nickname: keyof DB, room: IRoom, id: string) {
     const handler = (db: DB) => {
       if (!db[nickname]) {
         throw new Error(`No record found for nickname: ${nickname}`)
       }
 
-      if (!db[nickname].posts) {
-        db[nickname].posts = []
+      if (!db[nickname].rooms) {
+        db[nickname].rooms = {}
       }
 
-      db[nickname].posts.splice(idx, 1)
+      db[nickname].rooms[id] = room
+    }
+
+    await this.modifyDB(handler)
+  }
+
+  async updateRoomPlayback(
+    nickname: keyof DB,
+    { isPlaying, currentTime }: Pick<IRoom, "isPlaying" | "currentTime">,
+    id: string
+  ) {
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
+
+      if (!db[nickname].rooms) {
+        db[nickname].rooms = {}
+      }
+
+      db[nickname].rooms[id].isPlaying = isPlaying
+      db[nickname].rooms[id].currentTime = currentTime
+    }
+
+    await this.modifyDB(handler)
+  }
+
+  async swapRooms(nickname: keyof DB, roomIdx: number, roomIdx2: number) {
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
+
+      if (!db[nickname].rooms?.[roomIdx] || !db[nickname].rooms?.[roomIdx2]) {
+        throw new Error(`Invalid room indexes`)
+      }
+
+      const tmp = db[nickname].rooms[roomIdx]
+      db[nickname].rooms[roomIdx] = db[nickname].rooms[roomIdx2]
+      db[nickname].rooms[roomIdx2] = tmp
+    }
+
+    await this.modifyDB(handler)
+  }
+
+  async createRoom(nickname: keyof DB, room: IRoom) {
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
+
+      if (!db[nickname].rooms) {
+        db[nickname].rooms = {}
+      }
+
+      db[nickname].rooms[room.id] = room
+    }
+
+    await this.modifyDB(handler)
+  }
+
+  async deleteRoom(nickname: keyof DB, id: string) {
+    const handler = (db: DB) => {
+      if (!db[nickname]) {
+        throw new Error(`No record found for nickname: ${nickname}`)
+      }
+
+      if (!db[nickname].rooms) {
+        throw new Error(`No rooms found for nickname: ${nickname}`)
+      }
+
+      delete db[nickname].rooms[id]
     }
 
     await this.modifyDB(handler)

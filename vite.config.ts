@@ -3,12 +3,19 @@ import vueJsx from "@vitejs/plugin-vue-jsx"
 import { defineConfig } from "vite"
 
 export default defineConfig({
-  root: "./src/frontend",
-  plugins: [vue(), vueJsx()],
-  publicDir: "public",
   build: {
     outDir: "../../build/frontend",
-    emptyOutDir: true
+    emptyOutDir: true,
   },
-  clearScreen: false
+  clearScreen: false,
+  css: {
+    preprocessorOptions: {
+      scss: {
+        quietDeps: true,
+      },
+    },
+  },
+  plugins: [vue(), vueJsx()],
+  publicDir: "public",
+  root: "./src/frontend",
 })

@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "discord-message-app",
+      name: "sync-watcher",
       script: "./build/app.js"
     }
   ]

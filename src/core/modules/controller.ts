@@ -1,29 +1,30 @@
-import { getContentType, getPayload, makeCookie, makeDeleteCookie, parseCookies } from "../utils"
-import { DBService } from "./message-service"
-import jwt from "jsonwebtoken"
-import { secretCode } from "../utils/systemVariables"
 import { RequestListener } from "http"
-import { IMessage } from "../interfaces/IMessage"
-
 import bcrypt from "bcrypt"
-import { IUserData } from "../interfaces"
-import JwtPayload from "../interfaces/JwtPayload"
+import jwt from "jsonwebtoken"
+import { v7 as makeUUID } from "uuid"
+
+import { getContentType, getBody, makeCookie, parseCookies, secretCode } from "../utils"
+import { DBService } from "./message-service"
+import { DeepNestedObject, IRoom, IRoomPayload, IUserData, JwtPayload } from "../types"
 
 export const authController: RequestListener = async (req, res) => {
   try {
-    const { username, password } = await getPayload<{ username: string; password: string }>(req)
+    const { username, password } = await getBody<{ username: string; password: string }>(req)
 
-    if (!username || !password) throw new Error("Username or password wasn't specified")
+    if (!username || !password) {
+      throw new Error("Username or password wasn't specified")
+    }
 
-    const dbService = new DBService()
+    const dbService = DBService.getInstance()
     await dbService.getDB()
 
     for (const nickname in dbService.DB) {
-      if (nickname.trim().toLowerCase() === username.trim().toLowerCase() && (await bcrypt.compare(password, dbService.DB[nickname].hash))) {
+      if (
+        nickname.trim().toLowerCase() === username.trim().toLowerCase() &&
+        (await bcrypt.compare(password, dbService.DB[nickname].hash))
+      ) {
         const userData: IUserData = {
           nickname,
-          discordToken: dbService.DB[nickname].discordToken,
-          isTokenValid: dbService.DB[nickname].isTokenValid
         }
 
         const token = jwt.sign(userData, secretCode, { expiresIn: "2d" })
@@ -35,13 +36,13 @@ export const authController: RequestListener = async (req, res) => {
     }
 
     throw new Error("User with this username and password wasn't found")
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: error.message.toString() }))
+    return res.end(JSON.stringify({ error: (error as DeepNestedObject).message.toString() }))
   }
 }
-export const tokenUpdateController: RequestListener = async (req, res) => {
+export const getRoomsController: RequestListener = async (req, res) => {
   const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
 
   if (!cookies.token || cookies.token.toString().length < 10) {
@@ -50,42 +51,28 @@ export const tokenUpdateController: RequestListener = async (req, res) => {
   }
 
   try {
-    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
+    const jwtPayload = jwt.verify(cookies.token, secretCode) as JwtPayload
     const { nickname } = JSON.parse(cookies.userData ?? "{}")
 
     if (jwtPayload.nickname !== nickname) {
       throw new Error()
     }
 
-    const payload = await getPayload<{ discordToken: string }>(req)
-    const dbService = new DBService()
+    const dbService = DBService.getInstance()
 
-    await dbService.getDB()
-    await dbService.setToken(nickname, payload.discordToken, true)
-
-    const userData: IUserData = {
-      nickname,
-      discordToken: payload.discordToken,
-      isTokenValid: true
-    }
-
-    const token = jwt.sign(userData, secretCode, { expiresIn: "2d" })
-    const cookiesToSend = [makeCookie("token", token), makeCookie("userData", JSON.stringify(userData), false)]
-
-    res.setHeader("Set-Cookie", cookiesToSend)
+    const rooms = await dbService.getRooms(nickname)
 
     res.writeHead(200, { "Content-Type": getContentType(".json") })
 
-    return res.end(JSON.stringify({ message: "Token changed successfully" }))
-  } catch (error: any) {
-    const cookiesToSend = [makeDeleteCookie("token"), makeDeleteCookie("userData")]
-    res.setHeader("Set-Cookie", cookiesToSend)
-    res.writeHead(400)
+    return res.end(JSON.stringify({ rooms: rooms ?? [] }))
+  } catch (error: unknown) {
     console.error(error)
-    return res.end(JSON.stringify({ error: error.message.toString() }))
+    res.writeHead(400)
+    return res.end(JSON.stringify({ error: (error as DeepNestedObject).message.toString() }))
   }
 }
-export const getPostsController: RequestListener = async (req, res) => {
+
+export const updateRoomsOrderController: RequestListener = async (req, res) => {
   const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
 
   if (!cookies.token || cookies.token.toString().length < 10) {
@@ -94,28 +81,29 @@ export const getPostsController: RequestListener = async (req, res) => {
   }
 
   try {
-    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
+    const jwtPayload = jwt.verify(cookies.token, secretCode) as JwtPayload
     const { nickname } = JSON.parse(cookies.userData ?? "{}")
 
     if (jwtPayload.nickname !== nickname) {
       throw new Error()
     }
 
-    const dbService = new DBService()
+    const payload = await getBody<[number, number]>(req)
 
-    const posts = await dbService.getPosts(nickname)
+    const dbService = DBService.getInstance()
+
+    await dbService.swapRooms(nickname, ...payload)
 
     res.writeHead(200, { "Content-Type": getContentType(".json") })
 
-    return res.end(JSON.stringify({ posts: posts ?? [] }))
-  } catch (error: any) {
+    return res.end(JSON.stringify({ message: "Room order changed successfully" }))
+  } catch (error: unknown) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: error.message.toString() }))
+    return res.end(JSON.stringify({ error: (error as DeepNestedObject).message.toString() }))
   }
 }
-
-export const updatePostsOrderController: RequestListener = async (req, res) => {
+export const getRoomController: RequestListener = async (req, res) => {
   const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
 
   if (!cookies.token || cookies.token.toString().length < 10) {
@@ -124,65 +112,40 @@ export const updatePostsOrderController: RequestListener = async (req, res) => {
   }
 
   try {
-    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
+    const jwtPayload = jwt.verify(cookies.token, secretCode) as JwtPayload
     const { nickname } = JSON.parse(cookies.userData ?? "{}")
 
     if (jwtPayload.nickname !== nickname) {
       throw new Error()
     }
 
-    const payload = await getPayload<[number, number]>(req)
+    const dbService = DBService.getInstance()
 
-    const dbService = new DBService()
+    const id = req.url?.split("/")?.at(-1)
+    const author = req.url?.split("/")?.at(-2)
 
-    await dbService.swapPosts(nickname, ...payload)
-
-    res.writeHead(200, { "Content-Type": getContentType(".json") })
-
-    return res.end(JSON.stringify({ message: "Post order changed successfully" }))
-  } catch (error: any) {
-    console.error(error)
-    res.writeHead(400)
-    return res.end(JSON.stringify({ error: error.message.toString() }))
-  }
-}
-export const getPostController: RequestListener = async (req, res) => {
-  const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
-
-  if (!cookies.token || cookies.token.toString().length < 10) {
-    res.writeHead(400)
-    return res.end()
-  }
-
-  try {
-    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
-    const { nickname } = JSON.parse(cookies.userData ?? "{}")
-
-    if (jwtPayload.nickname !== nickname) {
-      throw new Error()
+    if (!id || !author) {
+      res.writeHead(400)
+      return res.end()
     }
 
-    const dbService = new DBService()
+    const room = await dbService.getRoom(nickname, author, id)
 
-    const idx = parseInt(req.url?.split("/")?.at(-1) || "1") - 1
-
-    const post = await dbService.getPost(nickname, +idx)
-
-    if (!post) {
+    if (!room) {
       res.writeHead(404)
       return res.end("404")
     }
 
     res.writeHead(200, { "Content-Type": getContentType(".json") })
 
-    return res.end(JSON.stringify({ post }))
-  } catch (error: any) {
+    return res.end(JSON.stringify({ room }))
+  } catch (error: unknown) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: error.message.toString() }))
+    return res.end(JSON.stringify({ error: (error as DeepNestedObject).message.toString() }))
   }
 }
-export const updatePostController: RequestListener = async (req, res) => {
+export const updateRoomController: RequestListener = async (req, res) => {
   const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
 
   if (!cookies.token || cookies.token.toString().length < 10) {
@@ -191,31 +154,36 @@ export const updatePostController: RequestListener = async (req, res) => {
   }
 
   try {
-    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
+    const jwtPayload = jwt.verify(cookies.token, secretCode) as JwtPayload
     const { nickname } = JSON.parse(cookies.userData ?? "{}")
 
     if (jwtPayload.nickname !== nickname) {
       throw new Error()
     }
 
-    const payload = await getPayload<{ post: IMessage }>(req)
+    const payload = await getBody<{ room: IRoom }>(req)
 
-    const dbService = new DBService()
+    const dbService = DBService.getInstance()
 
-    const idx = parseInt(req.url?.split("/")?.at(-1) || "1") - 1
+    const id = req.url?.split("/")?.at(-1)
 
-    await dbService.updatePost(nickname, payload.post, +idx)
+    if (!id) {
+      res.writeHead(400)
+      return res.end()
+    }
+
+    await dbService.updateRoom(nickname, payload.room, id)
 
     res.writeHead(200, { "Content-Type": getContentType(".json") })
 
-    return res.end(JSON.stringify({ message: "Post changed successfully" }))
-  } catch (error: any) {
+    return res.end(JSON.stringify({ message: "Room changed successfully" }))
+  } catch (error: unknown) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: error.message.toString() }))
+    return res.end(JSON.stringify({ error: (error as DeepNestedObject).message.toString() }))
   }
 }
-export const deletePostController: RequestListener = async (req, res) => {
+export const deleteRoomController: RequestListener = async (req, res) => {
   const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
 
   if (!cookies.token || cookies.token.toString().length < 10) {
@@ -224,29 +192,34 @@ export const deletePostController: RequestListener = async (req, res) => {
   }
 
   try {
-    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
+    const jwtPayload = jwt.verify(cookies.token, secretCode) as JwtPayload
     const { nickname } = JSON.parse(cookies.userData ?? "{}")
 
     if (jwtPayload.nickname !== nickname) {
       throw new Error()
     }
 
-    const dbService = new DBService()
+    const dbService = DBService.getInstance()
 
-    const idx = parseInt(req.url?.split("/")?.at(-1) || "-10") - 1
+    const id = req.url?.split("/")?.at(-1)
 
-    await dbService.deletePost(nickname, +idx)
+    if (!id) {
+      res.writeHead(400)
+      return res.end()
+    }
+
+    await dbService.deleteRoom(nickname, id)
 
     res.writeHead(200, { "Content-Type": getContentType(".json") })
 
-    return res.end(JSON.stringify({ message: "Post changed successfully" }))
-  } catch (error: any) {
+    return res.end(JSON.stringify({ message: "Room changed successfully" }))
+  } catch (error: unknown) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: error.message.toString() }))
+    return res.end(JSON.stringify({ error: (error as DeepNestedObject).message.toString() }))
   }
 }
-export const createPostController: RequestListener = async (req, res) => {
+export const createRoomController: RequestListener = async (req, res) => {
   const cookies = parseCookies<{ token: string; userData: string }>(req.headers.cookie!)
 
   if (!cookies.token || cookies.token.toString().length < 10) {
@@ -255,26 +228,34 @@ export const createPostController: RequestListener = async (req, res) => {
   }
 
   try {
-    const jwtPayload = (await jwt.verify(cookies.token, secretCode)) as JwtPayload
+    const jwtPayload = jwt.verify(cookies.token, secretCode) as JwtPayload
     const { nickname } = JSON.parse(cookies.userData ?? "{}")
 
     if (jwtPayload.nickname !== nickname) {
       throw new Error()
     }
 
-    const payload = await getPayload<{ post: IMessage }>(req)
-    payload.post.status = "n/a"
+    const { room } = await getBody<{ room: IRoomPayload }>(req)
 
-    const dbService = new DBService()
+    const newRoom: IRoom = {
+      ...room,
+      author: nickname,
+      currentTime: 0,
+      isPlaying: false,
+      watchers: 0,
+      id: makeUUID(),
+    }
 
-    await dbService.createPost(nickname, payload.post)
+    const dbService = DBService.getInstance()
+
+    await dbService.createRoom(nickname, newRoom)
 
     res.writeHead(200, { "Content-Type": getContentType(".json") })
 
-    return res.end(JSON.stringify({ message: "Post created successfully" }))
-  } catch (error: any) {
+    return res.end(JSON.stringify({ message: "Room created successfully" }))
+  } catch (error: unknown) {
     console.error(error)
     res.writeHead(400)
-    return res.end(JSON.stringify({ error: error.message.toString() }))
+    return res.end(JSON.stringify({ error: (error as DeepNestedObject).message.toString() }))
   }
 }

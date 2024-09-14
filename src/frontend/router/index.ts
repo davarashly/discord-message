@@ -1,21 +1,27 @@
 import { createRouter, createWebHistory, Router, RouteRecordRaw } from "vue-router"
-import Home from "../views/Home.vue"
-import Post from "../views/Post.vue"
-import Settings from "../views/Settings.vue"
+
+import Rooms from "../views/Rooms.vue"
+import Room from "../views/Room.vue"
+import NewRoom from "../views/NewRoom.vue"
+
+// import Settings from "../views/Settings.vue"
 import Login from "../views/Login.vue"
+import NotFound from "../views/NotFound.vue"
 import { useStore } from "../store"
 
 const routes: RouteRecordRaw[] = [
-  { path: "/", redirect: "/posts" },
-  { path: "/posts", component: Home },
-  { path: "/posts/:idx", component: Post },
-  { path: "/settings", component: Settings },
-  { path: "/login", component: Login }
+  { path: "/", redirect: "/rooms" },
+  { path: "/rooms", component: Rooms },
+  { path: "/rooms/new", component: NewRoom },
+  { path: "/rooms/:author/:id", component: Room },
+  // { path: "/settings", component: Settings },
+  { path: "/login", component: Login },
+  { path: "/:catchAll(.*)", name: "NotFound", component: NotFound },
 ]
 
 const router: Router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 router.beforeEach(async (to, _from, next): Promise<void> => {

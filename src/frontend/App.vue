@@ -7,7 +7,7 @@
       <router-view />
     </div>
   </main>
-  <footer class="p-3 bg-dark text-white text-center">Discord Market</footer>
+  <footer class="p-3 bg-dark text-white text-center">Sync Watcher</footer>
 </template>
 
 <script lang="ts" setup>
@@ -16,7 +16,7 @@ import Navbar from "./components/Navbar.vue"
 </script>
 
 <style lang="scss">
-$primary: #6f2da8;
+//$primary: #6f2da8;
 $primary: #826b20;
 
 @import "bootstrap";
@@ -50,6 +50,11 @@ input,
 textarea {
   background-color: rgba(0, 0, 0, 0.3) !important;
   color: #fff !important;
+
+  &::placeholder,
+  ::placeholder {
+    color: rgba(173, 170, 159, 0.49) !important;
+  }
 }
 
 .btn {

@@ -1,6 +1,12 @@
 import { computed, ref } from "vue"
 
-export default <T = any>(url: string, method: "get" | "post" | "put" | "patch" | "delete" = "get", payload?: any) => {
+import { DeepNestedObject } from "../../core/types"
+
+export default <T = DeepNestedObject>(
+  url: string,
+  method: "get" | "post" | "put" | "patch" | "delete" = "get",
+  payload?: DeepNestedObject
+) => {
   const res = ref<T>()
   const isLoading = ref<boolean>(false)
 
@@ -12,7 +18,7 @@ export default <T = any>(url: string, method: "get" | "post" | "put" | "patch" |
         method,
         headers: newPayload ? { "Content-Type": "application/json" } : undefined,
         credentials: "include",
-        body: newPayload ? JSON.stringify(newPayload) : undefined
+        body: newPayload ? JSON.stringify(newPayload) : undefined,
       })
 
       if (!response.ok) {
@@ -36,6 +42,6 @@ export default <T = any>(url: string, method: "get" | "post" | "put" | "patch" |
   return {
     data,
     isLoading,
-    fetch: reFetch
+    fetch: reFetch,
   }
 }

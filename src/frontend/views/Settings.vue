@@ -25,7 +25,7 @@ const store = useStore()
 const token = ref<string>(store.userData?.discordToken || "")
 const router = useRouter()
 
-const { fetch, isLoading } = useFetch("/api/token", "post")
+const { fetch, isLoading } = useFetch("/api/token", "room")
 
 const onSubmit = async () => {
   try {

@@ -1,30 +1,33 @@
 import { pathResolve } from "../utils"
-import mkdirp from "mkdirp"
-import { socketMgr } from "./server"
+import { mkdirp } from "mkdirp"
 import fs from "fs/promises"
 
-function log(...args: any[]) {
+type Args = (Record<string, unknown> | string)[]
+
+function log(...args: Args) {
   const msg = prepareLog(args)
   const logPath = pathResolve(process.cwd(), "logs", "info.log")
 
   console.log(msg)
-  write(logPath, msg).then(() => {
-    socketMgr.broadcast("info", msg)
-  })
+  write(logPath, msg).then(() => {})
 }
 
-function error(...args: any[]) {
+function error(...args: Args) {
   const msg = prepareLog(args)
   const logPath = pathResolve(process.cwd(), "logs", "error.log")
 
   console.error(msg)
-  write(logPath, msg).then(() => {
-    socketMgr.broadcast("error", msg)
-  })
+  write(logPath, msg).then(() => {})
 }
 
-function prepareLog(args: any[] = []): string {
-  const [dd, mm, yyyy, h, m, s] = [...new Date().toLocaleString("en-GB", { timeZone: "Israel" }).matchAll(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/gm)].flat().slice(1)
+function prepareLog(args: Args = []): string {
+  const [dd, mm, yyyy, h, m, s] = [
+    ...new Date()
+      .toLocaleString("en-GB", { timeZone: "Israel" })
+      .matchAll(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/gm),
+  ]
+    .flat()
+    .slice(1)
 
   const msg = args.map((el) => (typeof el === "object" ? JSON.stringify(el, null, 2) : el.toString())).join(", ")
 
@@ -39,4 +42,4 @@ async function write(path: string, msg: string) {
   await fs.appendFile(path, msg + "\n")
 }
 
-export default { log, error }
+export const logger = { log, error }

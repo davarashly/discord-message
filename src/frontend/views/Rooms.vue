@@ -2,18 +2,16 @@
   <div class="container">
     <div class="row">
       <div class="col">
-        <div v-if="!isTokenValid" class="text-center">
-          <p class="display-5">Твой Дискорд токен больше не действителен.</p>
-          <p class="display-6">
-            <router-link to="/settings">Обнови его</router-link>
-          </p>
-        </div>
-        <div v-else-if="isLoading" class="d-flex justify-content-center">
-          <div class="spinner-border ms-2 text-secondary" role="status" style="scale: 5; --bs-spinner-border-width: 0.07em">
+        <div v-if="isLoading" class="d-flex justify-content-center">
+          <div
+            class="spinner-border ms-2 text-secondary"
+            role="status"
+            style="scale: 5; --bs-spinner-border-width: 0.07em"
+          >
             <span class="visually-hidden">Loading...</span>
           </div>
         </div>
-        <div class="posts" v-else>
+        <div class="rooms" v-else>
           <router-link
             draggable="true"
             @dragstart="onDrag($event, idx)"
@@ -21,28 +19,45 @@
             @dragover.prevent="dd.drag !== idx && (dd.drop = idx)"
             @dragleave.prevent="dd.drop = -1"
             @dragend.prevent="dd.drag = -1"
-            :to="`/posts/${idx + 1}`"
-            v-for="(_post, idx) in renderedPosts"
-            :class="{ dragging: dd.drag === idx, dropping: dd.drop === idx, disabled: !posts[idx].active, success: posts[idx].status === 'success', fail: posts[idx].status === 'fail' }"
-            class="post text-white text-decoration-none"
+            :to="`/rooms/${rooms[idx].author}/${rooms[idx].id}`"
+            v-for="(_room, idx) in renderedRooms"
+            :class="{
+              dragging: dd.drag === idx,
+              dropping: dd.drop === idx,
+              // disabled: !rooms[idx].active,
+              // success: rooms[idx].status === 'success',
+              // fail: rooms[idx].status === 'fail',
+            }"
+            class="room text-white text-decoration-none"
           >
-            <div class="p-2 delete" style="position: absolute; top: 0.5rem; right: 0.5rem" @click.prevent="deletePostHandler(idx + 1)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+            <div
+              class="p-2 delete"
+              style="position: absolute; top: 0.5rem; right: 0.5rem"
+              @click.prevent="deleteRoomHandler(idx + 1)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-trash-fill"
+                viewBox="0 0 16 16"
+              >
                 <path
                   d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"
                 />
               </svg>
             </div>
-            <pre v-html="renderedPosts[idx]" />
-            <div class="row" v-if="posts[idx].data.files?.some((f) => !!f)">
+            <pre v-html="renderedRooms[idx]" />
+            <div class="row">
               <div class="col">
-                <img class="img-fluid mt-4" v-for="img in posts[idx].data.files" :src="img" />
+                <img class="img-fluid mt-4" :src="rooms[idx].thumbnail" />
               </div>
             </div>
           </router-link>
-          <router-link to="/posts/new" class="post text-white text-decoration-none">
+          <router-link to="/rooms/new" class="room text-white text-decoration-none">
             <pre class="d-flex justify-content-center align-items-center" style="font-size: 72px">
-              <span>+</span>  
+              <span>+</span>
             </pre>
           </router-link>
         </div>
@@ -53,81 +68,62 @@
 
 <script lang="ts" setup>
 import { computed, onBeforeMount, reactive, ref } from "vue"
-import { IMessage } from "../../core/interfaces/IMessage"
-import MarkdownIt from "markdown-it"
-import MarkdownItEmoji from "markdown-it-emoji"
-import { gemoji } from "gemoji"
+import { IRoom } from "../../core/types"
 import useFetch from "../compositions/useFetch"
-import { useStore } from "../store"
 
-const store = useStore()
+const { fetch, isLoading, data } = useFetch<{ rooms: IRoom[] }>("/api/rooms")
 
-const isTokenValid = computed<boolean>(() => !!store.userData!.isTokenValid)
-
-const discordEmojis = gemoji.reduce((acc, cur) => {
-  if (cur.emoji) {
-    cur.names.forEach((name) => {
-      acc[name] = cur.emoji
-    })
-  }
-  return acc
-}, {})
-
-const md = new MarkdownIt().use(MarkdownItEmoji, { defs: discordEmojis })
-
-const { fetch, isLoading, data } = useFetch<{ posts: IMessage[] }>("/api/posts")
-
-const posts = ref<IMessage[]>([])
-const renderedPosts = computed<string[]>(() => posts.value.map((post) => md.render(post.data.content.trim().slice(0, 200)) + "..."))
+const rooms = ref<IRoom[]>([])
+const renderedRooms = computed<string[]>(() => rooms.value.map((room) => room.roomName))
 
 onBeforeMount(async () => {
   try {
     await fetch()
 
-    posts.value = data.value?.posts || []
+    rooms.value = data.value?.rooms || []
   } catch (e) {
     console.error(e)
   }
 })
 
-const onDrag = (evt: DragEvent, postIdx: number) => {
+const onDrag = (evt: DragEvent, roomIdx: number) => {
   evt.dataTransfer!.dropEffect = "move"
   evt.dataTransfer!.effectAllowed = "move"
 
-  dd.drag = postIdx
+  dd.drag = roomIdx
 }
 
-const onDrop = async (evt: DragEvent, postIdx: number) => {
+const onDrop = async (evt: DragEvent, roomIdx: number) => {
   if (dd.drag === -1) {
     return
   }
 
-  const dragPostIdx = dd.drag
+  const dragRoomIdx = dd.drag
 
-  const tmp = posts.value[dragPostIdx]
+  const tmp = rooms.value[dragRoomIdx]
 
-  posts.value[dragPostIdx] = posts.value[postIdx]
-  posts.value[postIdx] = tmp
+  rooms.value[dragRoomIdx] = rooms.value[roomIdx]
+  rooms.value[roomIdx] = tmp
 
-  const { fetch } = useFetch("/api/posts/order", "put", [dd.drag, dd.drop])
+  const { fetch } = useFetch("/api/rooms/order", "put", [dd.drag, dd.drop])
   await fetch()
 }
 
 const dd = reactive<Record<"drag" | "drop", number>>({
   drag: -1,
-  drop: -1
+  drop: -1,
 })
 
-const deletePostHandler = async (idx: number) => {
-  const { fetch: deletePost } = useFetch(`/api/posts/${idx}`, "delete")
+const deleteRoomHandler = async (idx: number) => {
+  const { fetch: deleteRoom } = useFetch(`/api/rooms/${idx}`, "delete")
 
   try {
     if (!confirm("Дядь, подумой, точно хочешь удалить?")) {
       return
     }
 
-    await deletePost()
-    posts.value.splice(idx - 1, 1)
+    await deleteRoom()
+    rooms.value.splice(idx - 1, 1)
   } catch (e) {
     console.error(e)
   }
@@ -135,12 +131,12 @@ const deletePostHandler = async (idx: number) => {
 </script>
 
 <style lang="scss" scoped>
-.posts {
+.rooms {
   display: flex;
   justify-content: space-evenly;
   flex-wrap: wrap;
 
-  .post {
+  .room {
     max-width: 300px;
     //max-height: 300px;
     border: 1px solid var(--bs-gray-600);

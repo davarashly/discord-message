@@ -4,7 +4,11 @@ import { TSConfigJSON } from "types-tsconfig"
 import { IncomingMessage } from "http"
 import mime from "mime-types"
 
-export const jsonCleanComments = <T = Record<string, any>>(json: string): T => JSON.parse(json.replace(/\s+\/\*.*\*\/|\s+\/\/.*/gm, ""))
+export * from "./config"
+export * from "./systemVariables"
+
+export const jsonCleanComments = <T = Record<string, unknown>>(json: string): T =>
+  JSON.parse(json.replace(/\s+\/\*.*\*\/|\s+\/\/.*/gm, ""))
 
 export const pathResolve = resolve
 export const readFile = (path: string): Buffer => readFileSync(pathResolve(path))
@@ -13,7 +17,7 @@ export const hrsToMilliseconds = (hrs: number) => hrs * 60 * 60 * 1000
 
 export const getContentType = (ext: string) => mime.lookup(ext) || ""
 
-export const getPayload = <T = Record<string, any>>(req: IncomingMessage) =>
+export const getBody = <T = Record<string, unknown>>(req: IncomingMessage) =>
   new Promise<T>((resolve, reject) => {
     let data = ""
     req.on("data", (chunk) => {
@@ -45,5 +49,6 @@ export const parseCookies = <T = Record<string, string>>(cookieHeader: string) =
   return cookies
 }
 
-export const makeCookie = (key: string, value: string, httpOnly = true) => `${key}=${value}; Path=/; ${httpOnly ? "HttpOnly; " : ""}SameSite=Strict; Max-Age=${24 * 60 * 60 * 2}`
+export const makeCookie = (key: string, value: string, httpOnly = true) =>
+  `${key}=${value}; Path=/; ${httpOnly ? "HttpOnly; " : ""}SameSite=Strict; Max-Age=${24 * 60 * 60 * 2}`
 export const makeDeleteCookie = (key: string) => `${key}=abc123; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`

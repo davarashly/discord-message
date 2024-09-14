@@ -1,12 +1,18 @@
 <template>
-  <form @submit.prevent="onSubmit" method="post" name="submit_form">
+  <form @submit.prevent="onSubmit" method="room" name="submit_form">
     <div class="mb-3">
       <label for="username" class="form-label">Логин</label>
-      <input v-model="user.username" type="text" class="form-control" id="username" />
+      <input v-model="user.username" type="text" class="form-control" id="username" autocomplete="username" />
     </div>
     <div class="mb-3">
       <label for="password" class="form-label">Пароль</label>
-      <input v-model="user.password" type="password" class="form-control" id="password" />
+      <input
+        v-model="user.password"
+        type="password"
+        class="form-control"
+        id="password"
+        autocomplete="current-password"
+      />
     </div>
 
     <button class="btn btn-primary" name="submit_form">

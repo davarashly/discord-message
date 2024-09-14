@@ -1,13 +1,27 @@
 <template>
-  <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
     <div class="container-fluid">
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
           <li v-for="link in links" class="nav-item text-center">
-            <router-link class="nav-link" :class="{ active: isRouteActive(link.url) }" :exact="!!link.exact" :to="link.url">{{ link.text }} </router-link>
+            <router-link
+              class="nav-link"
+              :class="{ active: isRouteActive(link.url) }"
+              :exact="!!link.exact"
+              :to="link.url"
+              >{{ link.text }}
+            </router-link>
           </li>
           <li v-if="!!store.userData?.nickname" class="nav-item text-center border-start ms-md-4 ps-md-4">
             <a href="#" class="nav-link" @click.prevent="logOut">Выйти</a>
@@ -35,8 +49,8 @@ const router = useRouter()
 const store = useStore()
 
 const links: ILink[] = [
-  { url: "/posts", text: "Посты" },
-  { url: "/settings", text: "Настройки" }
+  { url: "/rooms", text: "Комнаты" },
+  // { url: "/settings", text: "Настройки" }
 ]
 
 const isRouteActive = (path: string) => computed(() => route.path.startsWith(path)).value

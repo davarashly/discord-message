@@ -1,19 +1,15 @@
 /*** Config ***/
-require("./core/utils/config").default()
+import { config } from "./core/utils"
+
+config()
 
 /*** Main ***/
 import { AddressInfo } from "net"
-import { DBService } from "./core/modules/message-service"
-import server from "./core/modules/server"
-import logger from "./core/modules/logger"
-import { isProd, PORT } from "./core/utils/systemVariables"
+import { logger, server } from "./core/modules"
+import { isProd, PORT } from "./core/utils"
 
 const hostname = isProd ? "0.0.0.0" : "127.0.0.1"
 
 server.listen(PORT, hostname, async () => {
   logger.log(`Server is running on http://${(server.address() as AddressInfo).address}:${PORT}`)
-
-  if (isProd) {
-    await new DBService().processMessages()
-  }
 })

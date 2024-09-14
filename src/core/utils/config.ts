@@ -1,12 +1,9 @@
-import { readFileSync, writeFileSync } from "fs"
-import { pathResolve } from "./index"
-import { config as dotEnvConfig } from "dotenv"
+import dotEnv from "dotenv-safe"
+import { resolve as pathResolve } from "path"
 
-export default () => {
-  dotEnvConfig({ path: pathResolve(process.cwd(), "config", ".env") })
+export const config = () => {
+  const path = pathResolve(process.cwd(), "config", ".env")
+  const example = pathResolve(process.cwd(), "config", ".env.example")
 
-  const path = pathResolve(process.cwd(), "node_modules", "discord.js-user-account", "src", "structures", "interfaces", "Application.js")
-  const file = readFileSync(path).toString()
-
-  writeFileSync(path, file.replace(/constructor\(client, data\)/gm, "constructor(client, data={})"))
+  dotEnv.config({ allowEmptyValues: true, example, path })
 }
